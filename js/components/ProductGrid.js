@@ -203,9 +203,12 @@ export default class ProductGrid {
   
           .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 2rem;
             margin-bottom: 4rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
           }
   
           .product-card {
@@ -447,8 +450,9 @@ export default class ProductGrid {
             }
   
             .products-grid {
-              grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-              gap: 1.5rem;
+              display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
             }
   
             .filter-tabs {
