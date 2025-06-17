@@ -9,7 +9,9 @@ export default class Header {
             const link = document.createElement('link');
             link.id = 'header-css';
             link.rel = 'stylesheet';
-            link.href = '/styles/components/header.css';
+
+            const basePath = this.getBasePath();
+            link.href = `${basePath}styles/components/header.css`;
 
 
             // 로드 완료/에러 처리
@@ -25,6 +27,15 @@ export default class Header {
 
             document.head.appendChild(link);
         }
+    }
+
+    getBasePath() {
+        // 현재 페이지 위치에 따라 기본 경로 반환
+        const path = window.location.pathname;
+        if (path === '/' || path === '/index.html') {
+            return './';
+        }
+        return '../';
     }
 
     render() {
