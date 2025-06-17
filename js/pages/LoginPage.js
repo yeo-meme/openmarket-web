@@ -1,11 +1,16 @@
-export class LoginPage {
+class LoginPage {
+
+    constructor() {
+        this.container = document.createElement('main');
+        this.container.className = 'login-page';
+    }
     render() {
-        const mainContent = document.getElementById('main-content');
+        // const mainContent = document.getElementById('div');
         
         // ⭐ 로그인 페이지 UI 렌더링
-        mainContent.innerHTML = `
+        this.container.innerHTML = `
       <div class="logo">HÖDU</div>
-    <div class="container">
+    <div class="main-content">
         <div class="tab-container">
             <button class="tab active" data-tab="구매회원가입">구매회원가입</button>
             <button class="tab" data-tab="판매회원가입">판매회원가입</button>
@@ -113,8 +118,9 @@ export class LoginPage {
         </div>
     </div>
         `;
-
-        this.attachEvents();
+     
+        // this.attachEvents();
+        return this.container;
     }
 
     attachEvents() {
@@ -126,3 +132,5 @@ export class LoginPage {
         });
     }
 }
+
+export default LoginPage; // 이렇게 'default' 키워드를 추가합니다.

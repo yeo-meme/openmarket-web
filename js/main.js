@@ -132,6 +132,7 @@ class App {
     async renderPage(PageClass) {
         const app = document.getElementById('app');
 
+        app.innerHTML = ''; // ← 강제로 모든 내용 제거
         console.log('🎨 페이지 렌더링 시작:', PageClass.name);
 
         if (this.currentPage && this.currentPage.destroy) {
@@ -139,14 +140,17 @@ class App {
             this.currentPage.destroy();
         }
 
-        const existingPage = app.querySelector('main');
+        const existingPage = app.querySelector('main#main-content');
         if (existingPage) {
+            existingPage.innerHTML = ''; 
             existingPage.remove();
-        }
+        } 
 
         try {
             console.log('🏗️ 새 페이지 인스턴스 생성 중...');
             this.currentPage = new PageClass();
+
+            console.log(this.currentPage);
             const pageElement = this.currentPage.render();
 
             // 페이지 타이틀 설정
@@ -154,7 +158,12 @@ class App {
                 document.title = this.currentPage.pageTitle;
                 console.log('📝 페이지 타이틀 설정:', this.currentPage.pageTitle);
             }
-
+            console.log('=== 렌더링 후 상태 확인 ===');
+            console.log('현재 main:', document.querySelector('main'));
+            console.log('LoginPage container:', document.querySelector('.login-page'));
+            console.log('app 내부:', document.getElementById('app').innerHTML);
+            
+            console.log(`✅ 페이지 렌더링 완료: ${PageClass.name}`);
             app.appendChild(pageElement);
 
             console.log(`✅ 페이지 렌더링 완료: ${PageClass.name}`);

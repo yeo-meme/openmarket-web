@@ -56,18 +56,22 @@ class Router {
     // 현재 경로에 따른 페이지 로드
     async handleRoute() {
       const path = window.location.pathname;
+
       console.log(`🔄 라우트 처리: ${path}`);
+      console.log('📋 등록된 라우트들:', Object.keys(this.routes));
+      console.log('🎯 페이지 변경 콜백 등록됨:', !!this.pageChangeCallback);
       
       const route = this.routes[path] || this.routes['/'];
-      
+      console.log('🎯 선택된 라우트:', route ? '찾음' : '없음');
+
       if (route && this.pageChangeCallback) {
         try {
           // 동적으로 페이지 모듈 로드
           console.log('📦 페이지 모듈 로딩 중...');
-          const PageClass = await route();
+          const PageClass = await route(); //return 받는곳
           console.log('✅ 페이지 모듈 로드 완료:', PageClass.name);
           
-          this.pageChangeCallback(PageClass);
+          this.pageChangeCallback(PageClass); //main.js로 전달
           this.currentRoute = path;
           
         } catch (error) {
@@ -78,9 +82,23 @@ class Router {
           }
         }
       } else {
+           if (!route) {
         console.warn('⚠️ 해당 라우트를 찾을 수 없음:', path);
       }
+      if (!this.pageChangeCallback) {
+        console.warn('⚠️ 페이지 변경 콜백이 등록되지 않음');
+      }
+      }
     }
+
+     // 디버깅을 위한 메서드들
+  debug() {
+    console.log('🐛 Router 디버그 정보:');
+    console.log('- 현재 경로:', window.location.pathname);
+    console.log('- 등록된 라우트:', Object.keys(this.routes));
+    console.log('- 페이지 변경 콜백 등록됨:', !!this.pageChangeCallback);
+    console.log('- 현재 라우트:', this.currentRoute);
+  }
   }
   
 
@@ -98,12 +116,28 @@ class Router {
       throw error;
     }
   });
+
+   // 로그인 페이지 라우트 추가
+router.addRoute('/login', async () => {
+  console.log('🔄 LoginPage 로딩 시작...');
+  try {
+    const { default: LoginPage } = await import('./pages/LoginPage.js');
+    console.log('✅ LoginPage 모듈 로드 완료');
+    return LoginPage;
+  } catch (error) {
+    console.error('❌ LoginPage 로드 실패:', error);
+    throw error;
+  }
+});
   
   // 추가 라우트 예시
   router.addRoute('/about', async () => {
     const { default: AboutPage } = await import('./pages/aboutpage.js');
     return AboutPage;
   });
+
+
+  
   
   router.addRoute('/contact', async () => {
     const { default: ContactPage } = await import('./pages/contactpage.js');
@@ -111,3 +145,7 @@ class Router {
   });
   
   export default router;
+
+  // 🌐 전역 변수로 등록 (이 줄이 누락되었습니다!)
+window.router = router;
+console.log('🌐 라우터가 전역에 등록되었습니다:', window.router);

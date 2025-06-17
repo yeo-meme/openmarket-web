@@ -1,3 +1,5 @@
+import router from '../router.js';
+
 export default class Header {
     constructor(router) {
         this.router = router;  // 라우터 인스턴스 받기
@@ -62,7 +64,19 @@ export default class Header {
         // 👤 로그인 버튼 클릭 이벤트
         const loginBtn = header.querySelector('.login-btn');
         loginBtn.addEventListener('click', () => {
-            this.router.navigate('/login');  // 로그인 페이지로 이동
+            // this.router.navigate('/login');  // 로그인 페이지로 이동
+            console.log('라우터 존재:', !!window.router);
+            console.log('라우터 객체:', window.router);
+
+            // 2. 라우트 목록 확인
+            console.log('등록된 라우트:', Object.keys(window.router?.routes || {}));
+            window.router.navigateTo('/login');
+            // if (window.router) {
+            //     window.router.navigateTo('/login');
+            //   } else {
+            //     console.error('라우터를 찾을 수 없습니다.');
+            //     window.location.href = '/login';
+            //   }
         });
     }
 
