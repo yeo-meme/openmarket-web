@@ -37,7 +37,7 @@ class App {
        app.innerHTML = '';
         
        // ⭐ Header 렌더링
-       const header = new Header();
+       const header = new Header(this.router);
        app.appendChild(header.render());
        
        // 메인 컨텐츠 영역 생성
