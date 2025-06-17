@@ -56,7 +56,7 @@ export const products = [
       name: 'KODU 프리미엄 헤드폰', 
       price: '₩199,000', 
       originalPrice: '₩299,000',
-      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop',
+      image: '../../assets/images/img-1.png',
       badge: 'BEST',
       rating: 4.8
     },
@@ -65,7 +65,7 @@ export const products = [
       name: 'KODU 스마트 워치', 
       price: '₩329,000', 
       originalPrice: '₩399,000',
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop',
+      image: '../../assets/images/img-2.png',
       badge: 'NEW',
       rating: 4.6
     },
@@ -74,7 +74,7 @@ export const products = [
       name: 'KODU 무선 이어버드', 
       price: '₩129,000', 
       originalPrice: '₩179,000',
-      image: 'https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=400&h=300&fit=crop',
+      image: '../../assets/images/img-3.png',
       badge: 'HOT',
       rating: 4.9
     },
@@ -83,7 +83,7 @@ export const products = [
       name: 'KODU 블루투스 스피커', 
       price: '₩89,000', 
       originalPrice: '₩129,000',
-      image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop',
+      image: '../../assets/images/img-4.png',
       badge: 'SALE',
       rating: 4.5
     },
@@ -92,17 +92,9 @@ export const products = [
       name: 'KODU 게이밍 키보드', 
       price: '₩159,000', 
       originalPrice: '₩219,000',
-      image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=300&fit=crop',
+      image: '../../assets/images/img.png',
       badge: '',
       rating: 4.7
     },
-    { 
-      id: 6, 
-      name: 'KODU 웹캠 4K', 
-      price: '₩79,000', 
-      originalPrice: '₩99,000',
-      image: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=400&h=300&fit=crop',
-      badge: 'NEW',
-      rating: 4.4
-    }
+    
   ];
