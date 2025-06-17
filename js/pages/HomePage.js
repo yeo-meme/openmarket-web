@@ -7,7 +7,7 @@ export default class HomePage {
         this.header = new Header();
         this.heroSlider = new HeroSlider();
         this.productGrid = new ProductGrid();
-        this.pageTitle = "KODU 홈페이지";
+        this.pageTitle = "pipi 홈페이지";
     }
 
     render() {
@@ -17,9 +17,13 @@ export default class HomePage {
         const headerSection = this.header.render();
         page.appendChild(headerSection);
 
+
+        // 슬라이드 섹션 추가
+        page.appendChild(this.heroSlider.render());
+
         // 1. 히어로 슬라이더 섹션
-        const sliderSection = this.heroSlider.render();
-        page.appendChild(sliderSection);
+        // const sliderSection = this.heroSlider.render();
+        // page.appendChild(sliderSection);
 
         // 2. 상품 그리드 섹션
         const productSection = this.productGrid.render();
@@ -29,8 +33,6 @@ export default class HomePage {
         this.addPageAnimation(page);
         
 
-        // 슬라이드 섹션 추가
-        page.appendChild(this.heroSlider.render());
 
         console.log('✅ HomePage 렌더링 완료: 슬라이더 + 상품그리드');
         
