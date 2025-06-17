@@ -4,6 +4,7 @@ export const router = {
     init() {
         this.renderPage('home');
     },
+
     
     navigateTo(page) {
         this.renderPage(page);
