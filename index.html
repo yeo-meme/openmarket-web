@@ -4,119 +4,44 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HÖDU</title>
-
-    <link rel="stylesheet" href="./styles/style.css">
+    <title></title>
+    <link rel="stylesheet" href="./styles/main.css">
 </head>
 <body>
-    <div class="logo">HÖDU</div>
-    <div class="container">
-        <div class="tab-container">
-            <button class="tab active" data-tab="구매회원가입">구매회원가입</button>
-            <button class="tab" data-tab="판매회원가입">판매회원가입</button>
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">KODU</a>
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="상품을 검색해보세요">
+                <button class="search-btn">🔍</button>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn">🛒</button>
+                <button class="header-btn">👤</button>
+            </div>
         </div>
-        
-        <div class="form-container">
-            <form id="signupForm">
-                <div class="form-group">
-                    <label for="userId">아이디</label>
-                    <div class="input-with-button">
-                        <input type="text" id="userId" placeholder="jayooding22">
-                        <button type="button" class="check-btn" id="checkUserId">중복확인</button>
-                    </div>
-                    <div class="success-message hidden" id="userIdSuccess">
-                        <span class="check-icon">✓</span> 멋진 아이디네요! 1
-                    </div>
-                </div>
+    </header>
 
-                <div class="form-group">
-                    <label for="password">비밀번호</label>
-                    <input type="password" id="password" placeholder="비밀번호">
-                </div>
+    <main class="main">
+        <nav class="breadcrumb">
+            <a href="#">홈</a> > <a href="#">상품</a> > 전체상품
+        </nav>
 
-                <div class="form-group">
-                    <label for="passwordConfirm">비밀번호 재확인</label>
-                    <input type="password" id="passwordConfirm" placeholder="비밀번호 재확인">
-                    <div class="error-message hidden" id="passwordError">
-                        비밀번호가 일치하지 않습니다.
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="name">이름</label>
-                    <input type="text" id="name">
-                </div>
-
-                <div class="form-group">
-                    <label>휴대폰번호</label>
-                    <div class="phone-group">
-                        <select class="phone-select" id="phonePrefix">
-                            <option value="010">010</option>
-                            <option value="011">011</option>
-                            <option value="016">016</option>
-                            <option value="017">017</option>
-                            <option value="018">018</option>
-                            <option value="019">019</option>
-                        </select>
-                        <div class="phone-inputs">
-                            <input type="text" id="phoneMiddle" maxlength="4">
-                            <input type="text" id="phoneLast" maxlength="4">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" id="termsAgree">
-                    <label for="termsAgree">호두샵의 <u>이용약관</u> 및 <u>개인정보처리방침</u>에 대한 내용을 확인하였고 동의합니다.</label>
-                </div>
-
-                <button type="submit" class="submit-btn" id="submitBtn">가입하기</button>
-            </form>
-            
-            <!-- 판매회원가입 폼 (숨김) -->
-            <form id="sellerSignupForm" class="hidden">
-                <div class="form-group">
-                    <label for="sellerUserId">아이디</label>
-                    <div class="input-with-button">
-                        <input type="text" id="sellerUserId" placeholder="seller123">
-                        <button type="button" class="check-btn">중복확인</button>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="sellerPassword">비밀번호</label>
-                    <input type="password" id="sellerPassword">
-                </div>
-
-                <div class="form-group">
-                    <label for="sellerPasswordConfirm">비밀번호 재확인</label>
-                    <input type="password" id="sellerPasswordConfirm">
-                </div>
-
-                <div class="form-group">
-                    <label for="sellerName">이름</label>
-                    <input type="text" id="sellerName">
-                </div>
-
-                <div class="form-group">
-                    <label for="businessNumber">사업자 등록번호</label>
-                    <input type="text" id="businessNumber" placeholder="000-00-00000">
-                </div>
-
-                <div class="form-group">
-                    <label for="storeName">스토어 이름</label>
-                    <input type="text" id="storeName">
-                </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" id="sellerTermsAgree">
-                    <label for="sellerTermsAgree">호두샵의 <u>이용약관</u> 및 <u>개인정보처리방침</u>에 대한 내용을 확인하였고 동의합니다.</label>
-                </div>
-
-                <button type="submit" class="submit-btn">가입하기</button>
-            </form>
+        <div id="productGrid" class="product-grid">
+            <!-- Products will be loaded here -->
         </div>
-    </div>
-    <script src="./js/app.js"></script>
+
+        <div class="nav-dots">
+            <div class="nav-dot active"></div>
+            <div class="nav-dot"></div>
+            <div class="nav-dot"></div>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            로딩 중...
+        </div>
+    </main>
+
+    
 </body>
 </html>
