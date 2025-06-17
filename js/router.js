@@ -1,4 +1,4 @@
-// router.js
+
 class Router {
     constructor() {
       this.routes = {};
@@ -16,11 +16,11 @@ class Router {
       this.pageChangeCallback = callback;
     }
   
-    // 라우터 초기화
+
     init() {
       console.log('🔧 Router 초기화 시작...');
       
-      // 브라우저 뒤로가기/앞으로가기 처리
+      //뒤로가기/앞으로가기 처리
       window.addEventListener('popstate', () => {
         console.log('🔙 Popstate 이벤트 발생');
         this.handleRoute();
@@ -83,7 +83,7 @@ class Router {
     }
   }
   
-  // 라우터 인스턴스 생성
+
   const router = new Router();
   
   // 라우트 설정

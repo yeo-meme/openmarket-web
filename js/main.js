@@ -5,7 +5,6 @@ import HomePage from './pages/HomePage.js';
 
 class App {
     constructor() {
-        // this.router = router;
         // this.header = null;
         // this.currentPage = null;
         // this.state = {
@@ -21,25 +20,12 @@ class App {
         this.init();
     }
 
-    // init() {
-    //     const app = document.getElementById('app');
-
-    //     // 헤더에 라우터 전달
-    //     const header = new Header(this.router);
-    //     app.appendChild(header.render());
-
-
-    //     this.setupRoutes();
-    //     this.router.init();
-    // }
 
     init() {
         document.addEventListener('DOMContentLoaded', () => {
             this.setupRouter();
             this.setupApp();
-            // this.renderComponents();
         });
-        // const app = document.getElementById('app');
 
         // // ✅ 기존 내용 초기화
         // app.innerHTML = '';
@@ -75,6 +61,7 @@ class App {
 
         console.log('✅ App 초기화 완료');
     }
+    
     setupRouter() {
         router.init();
         // 홈 페이지
@@ -147,20 +134,17 @@ class App {
 
         console.log('🎨 페이지 렌더링 시작:', PageClass.name);
 
-        // 이전 페이지 정리
         if (this.currentPage && this.currentPage.destroy) {
             console.log('🧹 이전 페이지 정리 중...');
             this.currentPage.destroy();
         }
 
-        // 기존 페이지 내용 제거
         const existingPage = app.querySelector('main');
         if (existingPage) {
             existingPage.remove();
         }
 
         try {
-            // 새 페이지 생성 및 렌더링
             console.log('🏗️ 새 페이지 인스턴스 생성 중...');
             this.currentPage = new PageClass();
             const pageElement = this.currentPage.render();

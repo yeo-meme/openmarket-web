@@ -1,8 +1,10 @@
+import Header from '../components/Header.js';
 import HeroSlider from '../components/HeroSlider.js';
 import ProductGrid from '../components/ProductGrid.js';
 
 export default class HomePage {
     constructor() {
+        this.header = new Header();
         this.heroSlider = new HeroSlider();
         this.productGrid = new ProductGrid();
         this.pageTitle = "KODU 홈페이지";
@@ -12,6 +14,8 @@ export default class HomePage {
         const page = document.createElement('main');
         page.className = 'home-page';
         
+        const headerSection = this.header.render();
+        page.appendChild(headerSection);
 
         // 1. 히어로 슬라이더 섹션
         const sliderSection = this.heroSlider.render();
