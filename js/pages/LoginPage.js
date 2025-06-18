@@ -22,10 +22,10 @@ export default class LoginPage {
             this.addPageAnimation(page);
 
 
-               // ✅ 상위 요소에 이벤트 위임
-        page.addEventListener('click', 
-            this.handlePageClick.bind(this));
-        
+            // ✅ 상위 요소에 이벤트 위임
+            page.addEventListener('click',
+                this.handlePageClick.bind(this));
+
             // this.setupInputEvents(page);
 
             return page;
@@ -48,49 +48,79 @@ export default class LoginPage {
         styleManager.unloadStyle(this.styleId);
     }
 
-     
+
     handlePageClick(event) {
         const target = event.target;
-        console.log('🖱️ 클릭 이벤트 발생:', target.className, target.id);
-        
+        console.log('🖱️ 클릭 이벤트 발생:', 
+            {
+                className: target.className,
+                id: target.id,
+                dataset: target.dataset
+            });
 
-       // 2. 로그인 버튼
-       if (target.classList.contains('login-btn') || target.type === 'submit') {
-        event.preventDefault();
-        this.handleLoginClick(event);
-    }
+        // 1. 탭 버튼 클릭 처리
+        if (target.classList.contains('tab-btn')) {
+            event.preventDefault();
+            this.handleTabClick(target);
+        }
+
+        // 2. 로그인 버튼
+        if (target.classList.contains('login-btn') || target.type === 'submit') {
+            event.preventDefault();
+            this.handleLoginClick(event);
+        }
         // data-action 속성으로 구분
         // if (target.dataset.action === 'login') {
         //     console.log('로그인 클릭');
         //     this.handleLogin();
         // }
-        
+
         // if (target.dataset.action === 'signup') {
         //     console.log('회원가입 클릭');
         //     window.router.navigateTo('/register');
         // }
-        
+
         if (target.id === 'goToSignup') {
             console.log('회원가입 페이지로 이동');
             window.router.navigateTo('/register');
         }
     }
 
-    switchTab(tab) {
-        this.currentTab = tab;
-
-        // 탭 버튼 상태 변경
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        tabBtns.forEach(btn => {
-            btn.classList.remove('active');
+    /**
+     * 🔄 탭 클릭 처리 (UI만 변경)
+     */
+    handleTabClick(clickedTab) {
+        const newTabType = clickedTab.dataset.tab;
+        
+        console.log(`🔄 탭 전환: ${this.currentTab} → ${newTabType}`);
+        
+        // 이미 활성화된 탭이면 무시
+        if (newTabType === this.currentTab) {
+            console.log('⚠️ 이미 활성화된 탭입니다.');
+            return;
+        }
+        
+        // 1. 모든 탭 버튼에서 active 클래스 제거
+        const allTabButtons = document.querySelectorAll('.tab-btn');
+        allTabButtons.forEach(button => {
+            button.classList.remove('active');
         });
-        document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
-
-        // 폼 초기화
+        
+        // 2. 클릭된 탭 버튼에 active 클래스 추가
+        clickedTab.classList.add('active');
+        
+        // 3. 현재 탭 상태 업데이트
+        this.currentTab = newTabType;
+        
+        // 4. 폼 초기화 (선택사항)
         this.clearForm();
-
-        console.log(`🔄 탭 변경: ${tab === 'buyer' ? '구매회원' : '판매회원'}`);
+        
+        console.log(`✅ 탭 UI 변경 완료: ${newTabType === 'buyer' ? '구매회원' : '판매회원'}`);
+        
+        // 5. 탭 변경 시 추가 동작이 필요하다면 여기에 추가
+        this.onTabChanged(newTabType);
     }
+
 
     async handleLogin() {
         const userId = document.getElementById('userId').value.trim();
@@ -227,45 +257,45 @@ export default class LoginPage {
         });
     }
 
-    
+
     async handleLoginClick(event) {
         console.log('🔐 로그인 버튼 클릭');
-        
+
         if (this.isLoading) {
             console.log('⚠️ 이미 로그인 요청 중...');
             return;
         }
-        
+
         const userIdInput = document.querySelector('#userId');
         const passwordInput = document.querySelector('#password');
-        
+
         const userId = userIdInput.value.trim();
         const password = passwordInput.value.trim();
-        
+
         // 1. 입력 유효성 검사
         if (!this.validateInputs(userId, password, userIdInput, passwordInput)) {
             return;
         }
-        
+
         // 2. API 로그인 요청
         await this.performLogin(userId, password);
     }
 
-     /**
-     * 📡 실제 API 로그인 요청
-     */
-     async performLogin(userId, password) {
+    /**
+    * 📡 실제 API 로그인 요청
+    */
+    async performLogin(userId, password) {
         this.setLoadingState(true);
-        
+
         try {
             console.log('📡 API 로그인 요청 시작:', { userId, userType: this.currentTab });
-            
+
             const loginData = {
                 username: userId,
                 password: password,
                 login_type: this.currentTab.toUpperCase() // BUYER 또는 SELLER
             };
-            
+
             const response = await fetch(`${this.apiBaseUrl}/accounts/login/`, {
                 method: 'POST',
                 headers: {
@@ -273,26 +303,26 @@ export default class LoginPage {
                 },
                 body: JSON.stringify(loginData)
             });
-            
+
             console.log('📡 API 응답 상태:', response.status);
-            
+
             if (response.ok) {
                 const data = await response.json();
                 console.log('✅ 로그인 성공:', data);
-                
+
                 await this.handleLoginSuccess(data, userId);
-                
+
             } else {
                 const errorData = await response.json();
                 console.log('❌ 로그인 실패:', errorData);
-                
+
                 this.handleLoginFailure(errorData);
             }
-            
+
         } catch (error) {
             console.error('❌ API 요청 오류:', error);
             this.showError('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
-            
+
         } finally {
             this.setLoadingState(false);
         }
@@ -303,14 +333,14 @@ export default class LoginPage {
      */
     validateInputs(userId, password, userIdInput, passwordInput) {
         let isValid = true;
-        
+
         // 아이디 입력 확인
         if (!userId) {
             this.showFieldError(userIdInput, '아이디를 입력해주세요.');
             userIdInput.focus();
             isValid = false;
         }
-        
+
         // 비밀번호 입력 확인
         if (!password) {
             this.showFieldError(passwordInput, '비밀번호를 입력해주세요.');
@@ -319,7 +349,7 @@ export default class LoginPage {
             }
             isValid = false;
         }
-        
+
         return isValid;
     }
 
@@ -332,7 +362,7 @@ export default class LoginPage {
             localStorage.setItem('accessToken', data.token);
             localStorage.setItem('refreshToken', data.refresh_token || '');
         }
-        
+
         // 사용자 정보 저장
         const userInfo = {
             id: userId,
@@ -341,19 +371,19 @@ export default class LoginPage {
             loginTime: new Date().toISOString(),
             ...data.user // API에서 추가 사용자 정보가 있다면
         };
-        
+
         localStorage.setItem('userInfo', JSON.stringify(userInfo));
-        
+
         console.log('💾 사용자 정보 저장 완료:', userInfo);
-        
+
         // 성공 메시지 표시
         this.showSuccessMessage(`${userInfo.username || userId}님, 환영합니다!`);
-        
+
         // 이전 페이지로 이동 (2초 후)
         setTimeout(() => {
             const previousPage = sessionStorage.getItem('previousPage') || '/';
             sessionStorage.removeItem('previousPage');
-            
+
             console.log('🔙 이전 페이지로 이동:', previousPage);
             window.router.navigateTo(previousPage);
         }, 2000);
@@ -364,14 +394,14 @@ export default class LoginPage {
      */
     handleLoginFailure(errorData) {
         const passwordInput = document.querySelector('#password');
-        
+
         // 비밀번호 필드 초기화 및 포커스
         passwordInput.value = '';
         passwordInput.focus();
-        
+
         // 에러 메시지 결정
         let errorMessage = '로그인에 실패했습니다.';
-        
+
         if (errorData.detail) {
             if (errorData.detail.includes('자격 인증데이터')) {
                 errorMessage = '아이디 또는 비밀번호가 올바르지 않습니다.';
@@ -387,9 +417,9 @@ export default class LoginPage {
         } else if (errorData.password) {
             errorMessage = '비밀번호를 확인해주세요.';
         }
-        
+
         this.showFieldError(passwordInput, errorMessage);
-        
+
         // 폼에 오류 상태 추가
         const form = document.querySelector('#authForm');
         if (form) {
@@ -409,7 +439,7 @@ export default class LoginPage {
     setLoadingState(isLoading) {
         this.isLoading = isLoading;
         const loginBtn = document.querySelector('.login-btn');
-        
+
         if (loginBtn) {
             if (isLoading) {
                 loginBtn.disabled = true;
@@ -618,12 +648,27 @@ export default class LoginPage {
         console.log('✅ LoginPagfe 정리 완료');
     }
 
-     // 에러 메시지를 위한 헬퍼 (선택 사항, 경고 메시지와 다르게 표시하고 싶을 때)
-     showErrorMessage(message) {
+    // 에러 메시지를 위한 헬퍼 (선택 사항, 경고 메시지와 다르게 표시하고 싶을 때)
+    showErrorMessage(message) {
         const passwordWarning = document.getElementById('passwordWarning'); // 기존 경고 메시지 영역 재활용
         if (passwordWarning) {
             passwordWarning.textContent = message;
             passwordWarning.style.display = 'block';
         }
     }
+    /**
+ * 특정 입력 필드 아래에 경고 메시지를 표시합니다.
+ * @param {HTMLInputElement} inputElement - 메시지를 표시할 입력 필드 요소
+ * @param {string} message - 표시할 에러 메시지
+ */
+    showFieldError(inputElement, message) {
+        const warningElementId = inputElement.id + 'Warning';
+        const warningElement = document.getElementById(warningElementId);
+        if (warningElement) {
+            warningElement.textContent = message;
+            // 필요하다면 입력 필드에 에러 스타일 클래스 추가
+            inputElement.classList.add('input-error');
+        }
+    }
+
 }

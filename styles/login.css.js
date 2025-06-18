@@ -365,11 +365,11 @@
 }
 
 .tab-btn {
+      background: #f8f8f8;
+    color: #666;
     flex: 1;
     padding: 1.2rem;
     border: none;
-    background: #f8f9fa;
-    color: #6c757d;
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
@@ -378,10 +378,9 @@
 }
 
 .tab-btn.active {
-    background: white;
-    color: #495057;
+       background: white;
+    color: #333;
     border-bottom-color: #21BF48;
-    font-weight: 600;
 }
 
 .tab-btn:hover:not(.active) {
