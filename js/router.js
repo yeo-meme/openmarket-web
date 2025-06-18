@@ -4,6 +4,7 @@ class Router {
       this.routes = {};
       this.currentRoute = '';
       this.pageChangeCallback = null;
+      this.isNavigating = false; // ⭐ 네비게이션 상태 추가
     }
   
     // 라우트 등록
@@ -21,10 +22,12 @@ class Router {
       console.log('🔧 Router 초기화 시작...');
       
       //뒤로가기/앞으로가기 처리
-      window.addEventListener('popstate', () => {
-        console.log('🔙 Popstate 이벤트 발생');
-        this.handleRoute();
-      });
+      window.addEventListener('popstate', (e) => {
+        console.log('🔙 Popstate 이벤트 발생 - 실제 브라우저 네비게이션');
+        if (!this.isNavigating) { // ⭐ 프로그래밍 방식이 아닐 때만
+            this.handleRoute();
+        }
+    });
   
       // 링크 클릭 이벤트 처리
       document.addEventListener('click', (e) => {
@@ -47,9 +50,15 @@ class Router {
   
     // 페이지 이동
     navigateTo(url) {
+      console.log(`🚀 navigateTo 호출: ${window.location.pathname} → ${url}`);
+        
       if (url !== window.location.pathname) {
-        history.pushState(null, null, url);
-        this.handleRoute();
+          this.isNavigating = true; // ⭐ 네비게이션 시작
+          
+          history.pushState(null, null, url);
+          this.handleRoute();
+      } else {
+          console.log('⚠️ 같은 경로이거나 이미 네비게이션 중:', url);
       }
     }
   
@@ -117,7 +126,7 @@ class Router {
     }
   });
 
-   // 로그인 페이지 라우트 추가
+   // 로그인
 router.addRoute('/login', async () => {
   console.log('🔄 LoginPage 로딩 시작...');
   try {
@@ -129,6 +138,57 @@ router.addRoute('/login', async () => {
     throw error;
   }
 });
+
+// ⭐ 회원가입 - 하나만 등록
+router.addRoute('/register', async () => {
+  console.log('🔄 RegisterPage 로딩 시작...');
+  try {
+      const moduleUrl = './pages/RegisterPage.js';
+      console.log('📁 모듈 경로:', moduleUrl);
+      
+      const { default: RegisterPage } = await import(moduleUrl);
+      console.log('✅ RegisterPage 모듈 로드 완료');
+      
+      // 클래스 유효성 검사
+      if (typeof RegisterPage === 'function') {
+          return RegisterPage;
+      } else {
+          throw new Error('RegisterPage가 유효한 클래스가 아닙니다');
+      }
+      
+  } catch (error) {
+      console.error('❌ RegisterPage 로드 실패:', error);
+      console.error('❌ 에러 상세:', error.message);
+      
+      // ⭐ 임시 대체 페이지 반환 (에러 시에도 동작하도록)
+      return class ErrorRegisterPage {
+          constructor() {
+              this.pageTitle = "회원가입 페이지 - 오류";
+          }
+          
+          getLayoutType() {
+              return 'full-page';
+          }
+          
+          render() {
+              const page = document.createElement('main');
+              page.className = 'error-page';
+              page.innerHTML = `
+                  <div class="error-container">
+                      <h1>회원가입 페이지 로드 오류</h1>
+                      <p>파일을 찾을 수 없습니다: RegisterPage.js</p>
+                      <button onclick="window.router.navigateTo('/login')">로그인</button>
+                      <button onclick="window.router.navigateTo('/')">홈으로</button>
+                  </div>
+              `;
+              return page;
+          }
+          
+          destroy() {}
+      };
+  }
+});
+
   
   // 추가 라우트 예시
   router.addRoute('/about', async () => {

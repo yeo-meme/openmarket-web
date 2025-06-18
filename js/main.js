@@ -17,6 +17,7 @@ class App {
         //  window.router = this.router;
         //  window.appState = this.state;
         this.currentPage = null;
+        this.hasGlobalHeader = false;
         this.init();
     }
 
@@ -98,80 +99,77 @@ class App {
         });
     }
 
-    // renderComponents() {
-    //     // 메인 컨테이너 생성
-    //     const app = document.getElementById('app');
-    //     if (!app) {
-    //         console.error('App container not found');
-    //         return;
-    //     }
-
-    //     // 각 컴포넌트 렌더링
-    //     this.renderHeader();
-    //     this.renderHeroSlider();
-    //     this.renderProductGrid();
-    // }
-
-    // renderHeader() {
-    //     const headerContainer = document.createElement('div');
-    //     headerContainer.id = 'header-container';
-    //     document.getElementById('app').appendChild(headerContainer);
-
-    //     const gnbHeader = Header;
-    //     gnbHeader.render(headerContainer);
-    // }
-
-    // renderHeroSlider() {
-    //     const sliderContainer = document.createElement('div');
-    //     sliderContainer.id = 'slider-container';
-    //     document.getElementById('app').appendChild(sliderContainer);
-
-    //     const heroSlider = HeroSlider;
-    //     heroSlider.render(sliderContainer);
-    // }
     async renderPage(PageClass) {
         const app = document.getElementById('app');
 
-        app.innerHTML = ''; // ← 강제로 모든 내용 제거
+        // app.innerHTML = ''; // ← 강제로 모든 내용 제거
         console.log('🎨 페이지 렌더링 시작:', PageClass.name);
 
-        if (this.currentPage && this.currentPage.destroy) {
-            console.log('🧹 이전 페이지 정리 중...');
-            this.currentPage.destroy();
-        }
+        await this.cleanupCurrentPage();
+        // if (this.currentPage && this.currentPage.destroy) {
+        //     console.log('🧹 이전 페이지 정리 중...');
+        //     this.currentPage.destroy();
+        // }
 
-        const existingPage = app.querySelector('main#main-content');
-        if (existingPage) {
-            existingPage.innerHTML = ''; 
-            existingPage.remove();
-        } 
+        // const existingPage = app.querySelector('main#main-content');
+        // if (existingPage) {
+        //     existingPage.innerHTML = ''; 
+        //     existingPage.remove();
+        // } 
 
         try {
             console.log('🏗️ 새 페이지 인스턴스 생성 중...');
             this.currentPage = new PageClass();
 
-            console.log(this.currentPage);
-            const pageElement = this.currentPage.render();
-
-            // 페이지 타이틀 설정
-            if (this.currentPage.pageTitle) {
-                document.title = this.currentPage.pageTitle;
-                console.log('📝 페이지 타이틀 설정:', this.currentPage.pageTitle);
-            }
-            console.log('=== 렌더링 후 상태 확인 ===');
-            console.log('현재 main:', document.querySelector('main'));
-            console.log('LoginPage container:', document.querySelector('.login-page'));
-            console.log('app 내부:', document.getElementById('app').innerHTML);
-            
-            console.log(`✅ 페이지 렌더링 완료: ${PageClass.name}`);
-            app.appendChild(pageElement);
-
-            console.log(`✅ 페이지 렌더링 완료: ${PageClass.name}`);
+           // 3. 페이지 레이아웃 타입 확인
+           const layoutType = this.currentPage.getLayoutType ? 
+                              this.currentPage.getLayoutType() : 'full-page';
+           
+           console.log('📋 페이지 레이아웃 타입:', layoutType);
+           
+           await this.renderByLayoutType(app, layoutType);
+           
+           // 5. 페이지 타이틀 및 메타 설정
+        //    this.updatePageMeta();
+           
+           console.log('✅ 페이지 렌더링 완료:', PageClass.name);
 
         } catch (error) {
             console.error('페이지 렌더링 오류:', error);
             this.showError('페이지를 불러오는 중 오류가 발생했습니다.');
         }
+    }
+
+    async cleanupCurrentPage() {
+        if (this.currentPage && this.currentPage.destroy) {
+            console.log('🧹 이전 페이지 정리 중...');
+            await this.currentPage.destroy();
+        }
+    }
+
+    async renderByLayoutType(app, layoutType) {
+        switch (layoutType) {
+            case 'with-gnb':
+                await this.renderWithGNB(app);
+                break;
+                
+            case 'full-page':
+            default:
+                await this.renderFullPage(app);
+                break;
+        }
+    }
+
+    async renderFullPage(app) {
+        // 전체 초기화
+        app.innerHTML = '';
+        
+        // 페이지가 전체 구조를 담당
+        const pageElement = await this.currentPage.render();
+        app.appendChild(pageElement);
+        
+        this.hasGlobalHeader = false;
+        console.log('✅ 전체 페이지 교체 완료');
     }
 
     showError(message) {

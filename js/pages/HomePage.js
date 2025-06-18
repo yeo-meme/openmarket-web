@@ -11,7 +11,7 @@ export default class HomePage {
     }
 
     render() {
-        const page = document.createElement('main');
+        const page = document.createElement('div');
         page.className = 'home-page';
         
         const headerSection = this.header.render();

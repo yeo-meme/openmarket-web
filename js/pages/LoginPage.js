@@ -9,32 +9,28 @@ export default class LoginPage {
         this.currentTab = 'buyer'; // 'buyer' 또는 'seller'
         this.styleId = 'login-page-styles';
     }
+
     render() {
- 
         try {
             const page = document.createElement('main');
             page.className = 'login-page';
-            
-            console.log('🔧 템플릿 적용 중...');
             page.innerHTML = loginPageTemplate();
-            
-            console.log('🔧 스타일 로드 중...');
             this.loadStyles();
-            
-            console.log('🔧 이벤트 바인딩 중...');
             // this.bindEvents();
-            
-            console.log('🔧 애니메이션 추가 중...');
             this.addPageAnimation(page);
-            
-            console.log('🔧 페이지 요소 생성 완료:', page);
+
+
+               // ✅ 상위 요소에 이벤트 위임
+        page.addEventListener('click', 
+            this.handlePageClick.bind(this));
+        
+
             return page;
-            
+
         } catch (error) {
             console.error('❌ LoginPage 렌더링 오류:', error);
             console.error('오류 스택:', error.stack);
-            
-            // 기본 페이지라도 반환
+
             const errorPage = document.createElement('main');
             errorPage.innerHTML = '<h1>로그인 페이지 로드 오류</h1>';
             return errorPage;
@@ -47,6 +43,27 @@ export default class LoginPage {
 
     unloadStyles() {
         styleManager.unloadStyle(this.styleId);
+    }
+
+     
+    handlePageClick(event) {
+        const target = event.target;
+        console.log(`handlePageClick 이벤트위임완료`);
+        // data-action 속성으로 구분
+        // if (target.dataset.action === 'login') {
+        //     console.log('로그인 클릭');
+        //     this.handleLogin();
+        // }
+        
+        // if (target.dataset.action === 'signup') {
+        //     console.log('회원가입 클릭');
+        //     window.router.navigateTo('/register');
+        // }
+        
+        if (target.id === 'goToSignup') {
+            console.log('회원가입 페이지로 이동');
+            window.router.navigateTo('/register');
+        }
     }
 
 
@@ -378,52 +395,10 @@ export default class LoginPage {
     //     }
     // }
 
-    bindEvents() {
-        // 탭 버튼 이벤트
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const tab = e.target.dataset.tab;
-                this.switchTab(tab);
-            });
-        });
-
-        // 폼 제출 이벤트
-        const authForm = document.getElementById('authForm');
-        authForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleLogin();
-        });
-
-        // 입력 필드 이벤트
-        const inputs = document.querySelectorAll('.form-input');
-        inputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                this.clearError(input);
-            });
-
-            input.addEventListener('blur', () => {
-                this.validateInput(input);
-            });
-        });
-
-        // 링크 이벤트
-        document.getElementById('findId').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.showNotification('아이디 찾기 기능을 준비 중입니다.', 'info');
-        });
-
-        document.getElementById('findPassword').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.showNotification('비밀번호 찾기 기능을 준비 중입니다.', 'info');
-        });
-
-        console.log('🔗 AuthPage 이벤트 바인딩 완료');
-    }
 
     switchTab(tab) {
         this.currentTab = tab;
-        
+
         // 탭 버튼 상태 변경
         const tabBtns = document.querySelectorAll('.tab-btn');
         tabBtns.forEach(btn => {
@@ -456,7 +431,7 @@ export default class LoginPage {
             // 간단한 로그인 검증
             if (this.authenticateUser(userId, password)) {
                 this.showNotification('로그인 성공!', 'success');
-                
+
                 // 홈페이지로 이동
                 setTimeout(() => {
                     if (window.router) {
@@ -504,7 +479,7 @@ export default class LoginPage {
 
     validateInput(input) {
         const value = input.value.trim();
-        
+
         if (!value) {
             this.showInputError(input.id, `${input.placeholder}을(를) 입력해주세요.`);
             return false;
@@ -517,7 +492,7 @@ export default class LoginPage {
     showInputError(inputId, message) {
         const input = document.getElementById(inputId);
         input.classList.add('error');
-        
+
         // 에러 메시지 표시 (필요시 구현)
         console.warn(`❌ ${message}`);
     }
@@ -591,7 +566,7 @@ export default class LoginPage {
         page.style.opacity = '0';
         page.style.transform = 'translateY(20px)';
         page.style.transition = 'all 0.5s ease';
-        
+
         requestAnimationFrame(() => {
             page.style.opacity = '1';
             page.style.transform = 'translateY(0)';
@@ -599,34 +574,42 @@ export default class LoginPage {
     }
 
     bindEvents() {
-        // 탭 버튼 이벤트
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const tab = e.target.dataset.tab;
-                this.switchTab(tab);
+        // const tabBtns = document.querySelectorAll('.tab-btn');
+        // tabBtns.forEach(btn => {
+        //     btn.addEventListener('click', (e) => {
+        //         const tab = e.target.dataset.tab;
+        //         this.switchTab(tab);
+        //     });
+        // });
+
+        // // 폼 제출 이벤트
+        // const authForm = document.getElementById('authForm');
+        // authForm.addEventListener('submit', (e) => {
+        //     e.preventDefault();
+        //     this.handleLogin();
+        // });
+
+        //회원가입
+        const signupBtn = document.querySelector('.goToSignup');
+        console.log('--------------버튼:', signupBtn); // null이 아니면 다음 코드도 실행
+        signupBtn.onclick = () => console.log('✅ 클릭됨');
+        if (signupBtn) {
+            signupBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log(`-----------회원가입클릭`);
+                window.router.navigateTo('/register');
             });
-        });
+        }
 
-        // 폼 제출 이벤트
-        const authForm = document.getElementById('authForm');
-        authForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.handleLogin();
-        });
-
-        // 회원가입 버튼 이벤트
-        this.addSignupButtonEvent();
-
-        console.log('🔗 AuthPage 이벤트 바인딩 완료');
+        console.log('🔗 LoginPage 이벤트 바인딩 완료');
     }
 
- destroy() {
-        console.log('🧹 AuthPage 정리 시작 (모듈 분리 버전)');
-        
+    destroy() {
+        console.log('🧹 LoginPagfe 정리 시작 (모듈 분리 버전)');
+
         // 스타일 정리
         this.unloadStyles();
-        
-        console.log('✅ AuthPage 정리 완료');
+
+        console.log('✅ LoginPagfe 정리 완료');
     }
 }
