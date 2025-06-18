@@ -9,6 +9,7 @@ class RegisterPage {
         this.pageTitle = "HODU - 로그인";
         this.currentTab = 'buyer'; // 'buyer' 또는 'seller'
         this.styleId = 'register-page-styles';
+        this.apiBaseUrl = 'https://api.wenivops.co.kr/services/open-market';
     }
 
     render() {
@@ -93,13 +94,12 @@ class RegisterPage {
             return;
         }
         
-        // 2. 로딩 상태 표시
         this.showMessage('확인 중...');
-        this.setButtonLoading(button, true);
+        // this.setButtonLoading(button, true);
         
         try {
             // 3. ⭐ API 요청 (async)
-            const response = await fetch(`${this.apiBaseUrl}/accounts/check-id/`, {
+            const response = await fetch(`${this.apiBaseUrl}/accounts/validate-username/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -107,22 +107,13 @@ class RegisterPage {
                 body: JSON.stringify({ username: username })
             });
             
-            // 4. 응답 처리
             if (response.ok) {
-                // ✅ 성공 - hidden 텍스트를 visible로
-                this.hideMessage(loadingMessage);
                 this.showMessage('✓ 사용 가능한 아이디입니다!', 'success');
-                
-                // 입력 필드에 성공 표시
-                usernameInput.classList.remove('error');
-                usernameInput.classList.add('success');
-                
                 console.log('✅ ID 중복확인 성공');
                 
             } else {
                 // ❌ 실패
                 const errorData = await response.json();
-                this.hideMessage(loadingMessage);
                 
                 let errorText = '이미 사용 중인 아이디입니다.';
                 if (errorData.detail) {
@@ -130,10 +121,7 @@ class RegisterPage {
                 } else if (errorData.username) {
                     errorText = errorData.username[0];
                 }
-                
                 this.showMessage( errorText, 'error');
-                usernameInput.classList.add('error');
-                usernameInput.classList.remove('success');
                 
                 console.log('❌ ID 중복확인 실패:', errorText);
             }
