@@ -35,7 +35,7 @@ class RegisterPage {
     }
 
 
-    handlePageClick(event) {
+    async handlePageClick(event) {
         const target = event.target;
         console.log('🖱️ 클릭 이벤트 발생:',
             {
@@ -50,26 +50,150 @@ class RegisterPage {
             this.handleTabClick(target);
         }
 
-        // data-action 속성으로 구분
-        // if (target.dataset.action === 'login') {
-        //     console.log('로그인 클릭');
-        //     this.handleLogin();
-        // }
+           // 2. 가입 버튼 클릭 처리
+    if (target.classList.contains('signup-btn')) {
+        event.preventDefault(); // form submit 방지
+        this.validateAndSubmitForm(); 
+        return;
+    }
 
-        // if (target.dataset.action === 'signup') {
-        //     console.log('회원가입 클릭');
-        //     window.router.navigateTo('/register');
-        // }
+    // 3. 중복확인
+    if (target.classList.contains('verify-btn')) {
+        event.preventDefault(); // form submit 방지
+        await this.handleIdCheck(); // 중복확인
+        return;
+    }
 
-        if (target.id === 'goToSignup') {
-            console.log('회원가입 페이지로 이동');
-            window.router.navigateTo('/register');
+    }
+
+
+    /**
+     * 🔍 ID 중복확인 async 처리
+     */
+    async handleIdCheck(button) {
+        console.log('🔍 ID 중복확인 시작');
+        
+        // 현재 입력된 아이디 가져오기
+        const usernameInput = document.querySelector('#username');
+        const username = usernameInput.value.trim();
+    
+        
+        // this.hideMessage(messageEl);
+        
+        
+        // 1. 입력값 검증
+        if (!username) {
+            this.showMessage('아이디를 입력해주세요.');
+            usernameInput.focus();
+            return;
+        }
+        
+        if (username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username)) {
+            this.showMessage('ID는 20자 이내의 영어, 숫자만 가능합니다.');
+            return;
+        }
+        
+        // 2. 로딩 상태 표시
+        this.showMessage('확인 중...');
+        this.setButtonLoading(button, true);
+        
+        try {
+            // 3. ⭐ API 요청 (async)
+            const response = await fetch(`${this.apiBaseUrl}/accounts/check-id/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: username })
+            });
+            
+            // 4. 응답 처리
+            if (response.ok) {
+                // ✅ 성공 - hidden 텍스트를 visible로
+                this.hideMessage(loadingMessage);
+                this.showMessage('✓ 사용 가능한 아이디입니다!', 'success');
+                
+                // 입력 필드에 성공 표시
+                usernameInput.classList.remove('error');
+                usernameInput.classList.add('success');
+                
+                console.log('✅ ID 중복확인 성공');
+                
+            } else {
+                // ❌ 실패
+                const errorData = await response.json();
+                this.hideMessage(loadingMessage);
+                
+                let errorText = '이미 사용 중인 아이디입니다.';
+                if (errorData.detail) {
+                    errorText = errorData.detail;
+                } else if (errorData.username) {
+                    errorText = errorData.username[0];
+                }
+                
+                this.showMessage( errorText, 'error');
+                usernameInput.classList.add('error');
+                usernameInput.classList.remove('success');
+                
+                console.log('❌ ID 중복확인 실패:', errorText);
+            }
+            
+        } catch (error) {
+            // 🚨 네트워크 오류
+            console.error('❌ ID 중복확인 API 오류:', error);
+            
+            this.hideMessage(loadingMessage);
+            this.showMessage( '네트워크 오류가 발생했습니다.', 'error');
+            
+        } finally {
+            // 5. 로딩 상태 해제
+            this.setButtonLoading(button, false);
         }
     }
 
-    setupRegisterPageLogic() {
-        // --- 요소 참조 ---
-        const tabButtons = document.querySelectorAll('.tab-container .tab');
+//     // 메시지 표시 함수
+//     showMessage(element, text, type = 'info') {
+//     const messageEl = document.getElementById('buyer-id-message');
+        
+//     element.textContent = text;
+//     element.className = `message ${type} visible`;
+//     element.style.display = 'block';
+    
+//     // 부드러운 애니메이션
+//     element.style.opacity = '1';
+// }
+
+showMessage(text, type = 'info') {
+    const messageContainer = document.getElementById('buyer-id-message');
+    const messageText = messageContainer.querySelector('.message-text');
+    
+    if (!messageContainer || !messageText) {
+        console.error('메시지 요소를 찾을 수 없습니다:', messageId);
+        return;
+    }
+    
+    // 메시지 내용 설정
+    messageText.textContent = text;
+    
+    // 타입별 클래스 설정
+    messageContainer.className = `message-container visible ${type}`;
+    
+    // ✅ 숨김 → 표시 애니메이션
+    messageContainer.style.display = 'block';
+    messageContainer.style.opacity = '0';
+    messageContainer.style.transform = 'translateY(-10px)';
+    
+    // 부드러운 나타나기 애니메이션
+    setTimeout(() => {
+        messageContainer.style.opacity = '1';
+        messageContainer.style.transform = 'translateY(0)';
+    }, 10);
+    
+    console.log(`📢 메시지 표시: [${type}] ${text}`);
+}
+
+
+    validateAndSubmitForm() {
         const buyerSignupForm = document.getElementById('buyerSignupForm');
         const sellerSignupForm = document.getElementById('sellerSignupForm');
 
@@ -112,98 +236,6 @@ class RegisterPage {
 
 
 
-        // --- ID 중복확인 로직 (구매자) ---
-        let isBuyerIdChecked = false; // ID 중복확인 여부 플래그
-        checkUserIdBtn.addEventListener('click', async () => {
-            const username = buyerInputs.username.value.trim();
-            buyerWarnings.username.textContent = ''; // 경고 메시지 초기화
-            buyerSuccess.username.classList.add('hidden'); // 성공 메시지 숨김
-
-            if (!username) {
-                buyerWarnings.username.textContent = '아이디를 입력해주세요.';
-                return;
-            }
-            if (username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username)) {
-                buyerWarnings.username.textContent = 'ID는 20자 이내의 영어 소문자, 대문자, 숫자만 가능합니다.';
-                return;
-            }
-
-            try {
-                const response = await fetch(checkIdEndpoint, {
-                    method: 'POST', // 또는 GET, API 명세에 따라
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: username })
-                });
-
-                if (response.ok) {
-                    buyerSuccess.username.textContent = '✓ 멋진 아이디네요!';
-                    buyerSuccess.username.classList.remove('hidden');
-                    isBuyerIdChecked = true;
-                } else {
-                    const errorData = await response.json();
-                    if (errorData.username) { // 서버에서 특정 필드에 대한 오류를 줄 경우
-                        buyerWarnings.username.textContent = errorData.username[0];
-                    } else if (errorData.detail) { // 일반적인 오류 메시지
-                        buyerWarnings.username.textContent = errorData.detail;
-                    } else {
-                        buyerWarnings.username.textContent = '이미 사용 중인 아이디입니다.'; // 기본 메시지
-                    }
-                    isBuyerIdChecked = false;
-                }
-            } catch (error) {
-                console.error('ID 중복확인 오류:', error);
-                buyerWarnings.username.textContent = '네트워크 오류가 발생했습니다.';
-                isBuyerIdChecked = false;
-            }
-        });
-
-        // --- ID 중복확인 로직 (판매자 - 탭 전환 후) ---
-        // 판매자 폼의 중복확인 버튼은 탭 전환 후 동적으로 활성화될 수 있으므로,
-        // sellerSignupForm이 활성화될 때 이벤트를 연결하거나, 상위 요소에 위임
-        document.addEventListener('click', async (event) => {
-            if (event.target && event.target.id === 'checkSellerUserId' && currentActiveForm === 'seller') {
-                const username = sellerInputs.username.value.trim();
-                sellerWarnings.username.textContent = '';
-                sellerSuccess.username.classList.add('hidden');
-
-                if (!username) {
-                    sellerWarnings.username.textContent = '아이디를 입력해주세요.';
-                    return;
-                }
-                if (username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username)) {
-                    sellerWarnings.username.textContent = 'ID는 20자 이내의 영어 소문자, 대문자, 숫자만 가능합니다.';
-                    return;
-                }
-
-                try {
-                    const response = await fetch(checkIdEndpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: username })
-                    });
-
-                    if (response.ok) {
-                        sellerSuccess.username.textContent = '✓ 멋진 아이디네요!';
-                        sellerSuccess.username.classList.remove('hidden');
-                        // isSellerIdChecked = true; // 판매자 ID 중복확인 플래그
-                    } else {
-                        const errorData = await response.json();
-                        if (errorData.username) {
-                            sellerWarnings.username.textContent = errorData.username[0];
-                        } else if (errorData.detail) {
-                            sellerWarnings.username.textContent = errorData.detail;
-                        } else {
-                            sellerWarnings.username.textContent = '이미 사용 중인 아이디입니다.';
-                        }
-                        // isSellerIdChecked = false;
-                    }
-                } catch (error) {
-                    console.error('판매자 ID 중복확인 오류:', error);
-                    sellerWarnings.username.textContent = '네트워크 오류가 발생했습니다.';
-                    // isSellerIdChecked = false;
-                }
-            }
-        });
 
 
         // --- 구매자 폼 제출 로직 ---

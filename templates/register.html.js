@@ -15,8 +15,14 @@ export const registerPageTemplate = () => `
             <form>
                 <div class="form-group">
                     <label for="buyer-id">아이디</label>
-                    <input type="text" id="buyer-id" placeholder="아이디를 입력해주세요">
-                </div>
+                    <input type="text" id="username" placeholder="아이디를 입력해주세요">
+
+                    <button type="button" class="verify-btn">중복확인</button>
+                    <div id="buyer-id-message" class="message-container hidden">
+                    <span class="message-text"></span>
+                    </div>
+                
+                    </div>
 
                 <div class="form-group">
                     <label for="buyer-password">비밀번호</label>
@@ -45,7 +51,7 @@ export const registerPageTemplate = () => `
                             <option value="019">019</option>
                         </select>
                         <input type="tel" class="phone-input" placeholder="휴대폰 번호를 입력해주세요">
-                        <button type="button" class="verify-btn">인증번호 받기</button>
+                        
                     </div>
                 </div>
 
