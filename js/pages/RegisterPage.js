@@ -10,6 +10,7 @@ class RegisterPage {
         this.currentTab = 'buyer'; // 'buyer' 또는 'seller'
         this.styleId = 'register-page-styles';
         this.apiBaseUrl = 'https://api.wenivops.co.kr/services/open-market';
+
     }
 
     render() {
@@ -17,15 +18,265 @@ class RegisterPage {
         page.className = 'register-page';
         page.innerHTML = registerPageTemplate();
         this.loadStyles();
-        // this.bindEvents();
-        // this.addPageAnimation(page);
-        // ✅ 상위 요소에 이벤트 위임
+
         page.addEventListener('click',
             this.handlePageClick.bind(this));
+
+        // page.addEventListener('blur', this.handleInputBlur.bind(this), true);
+        page.addEventListener('input', this.passwordInputChange.bind(this));
 
         // this.attachEvents();
         return page;
     }
+
+    passwordInputChange() {
+        const passwordInput = document.getElementById('password-input'); // # 제거
+        const messageDiv = document.getElementById('password-message');   // # 제거
+        const messageText = messageDiv.querySelector('.message-text');   // span 요소 가져오기
+
+
+        // 빈 값이면 메시지 숨기기
+
+        const password = passwordInput.value;
+
+        if (!password) {
+            messageDiv.classList.add('hidden');
+            messageDiv.classList.remove('visible');
+            return;
+        }
+
+
+
+        // 유효성 검사 실행
+        const result = this.validatePassword(password);
+
+        messageText.textContent = result.message;
+
+        // ✅ 클래스로 표시/숨김 처리
+        messageDiv.classList.remove('hidden');
+        messageDiv.classList.add('visible');
+        messageDiv.style.color = result.isValid ? 'green' : 'red';
+        console.log('비밀번호 검증:', result);
+    }
+
+    validatePassword(password) {
+        const checks = {
+            length: password.length >= 8,
+            lowercase: /[a-z]/.test(password),
+            number: /\d/.test(password),
+            noSpaces: !/\s/.test(password)
+        };
+
+        // 필요한 조건들
+        const needed = [];
+
+        if (!checks.length) {
+            needed.push(`${8 - password.length}자 더 필요`);
+        }
+        if (!checks.lowercase) {
+            needed.push('영소문자');
+        }
+        if (!checks.number) {
+            needed.push('숫자');
+        }
+        if (!checks.noSpaces) {
+            needed.push('공백 제거');
+        }
+
+        // 모든 조건 만족 여부
+        const isValid = needed.length === 0;
+
+        // 메시지 생성
+        let message;
+        if (isValid) {
+            message = '✓ 안전한 비밀번호입니다!';
+        } else {
+            message = `${needed.join(', ')} 필요`;
+        }
+
+        return {
+            isValid: isValid,
+            message: message,
+            needed: needed
+        };
+    }
+    /**
+         * ⌨️ 인풋 input 이벤트 처리 (실시간 입력 중)
+         */
+    handleInputChange(event) {
+        const target = event.target;
+
+        if (!target.matches('.form-input')) {
+            return;
+        }
+
+        const fieldId = target.id;
+        const fieldValue = target.value; // trim 제거 (실시간에서는 원본값 사용)
+
+        // ⭐ 비밀번호는 실시간으로 유효성 검사
+        if (fieldId === 'password') {
+            this.validatePasswordRealtime(fieldValue);
+        }
+
+        // 비밀번호 확인은 실시간으로 체크
+        else if (fieldId === 'passwordConfirm') {
+            const password = document.querySelector('#password').value;
+
+            if (fieldValue && password !== fieldValue) {
+                this.showFieldError(fieldId, '비밀번호가 일치하지 않습니다.');
+            } else if (fieldValue && password === fieldValue) {
+                this.showFieldSuccess(fieldId, '✓ 비밀번호가 일치합니다.');
+            } else {
+                this.clearFieldError(fieldId);
+            }
+        }
+
+        // 다른 필드들은 입력 중에 오류 메시지만 제거
+        else {
+            this.clearFieldError(fieldId);
+        }
+    }
+
+    /**
+     * 🔐 비밀번호 실시간 검증
+     */
+    validatePasswordRealtime(password) {
+        const fieldId = 'password';
+
+        // 빈 값이면 메시지 제거
+        if (!password) {
+            this.clearFieldError(fieldId);
+            return;
+        }
+
+        const checks = {
+            length: password.length >= 8,
+            lowercase: /[a-z]/.test(password),
+            number: /\d/.test(password),
+            noSpaces: !/\s/.test(password)
+        };
+
+        // ⭐ 실시간 검증: 진행 상황을 보여주는 방식
+        const progress = this.getPasswordProgress(checks, password.length);
+
+        if (progress.isComplete) {
+            this.showFieldSuccess(fieldId, '✓ 안전한 비밀번호입니다.');
+        } else {
+            // 실시간에서는 부드럽게 안내
+            this.showFieldInfo(fieldId, progress.message);
+        }
+
+        console.log(`🔐 실시간 비밀번호 검증: ${progress.message}`);
+    }
+
+
+    /**
+       * ✅ 필드별 유효성 검사
+       */
+    //   async validateField(fieldId, value) {
+    //     const rules = this.validationRules[fieldId];
+    //     if (!rules) return true;
+
+    //     console.log(`🔍 유효성 검사 시작: ${fieldId}`);
+
+    //     // 1. 필수 입력 확인
+    //     if (rules.required && !value) {
+    //         this.showFieldError(fieldId, `${this.getFieldName(fieldId)}을(를) 입력해주세요.`);
+    //         return false;
+    //     }
+
+    //     // 값이 없으면 추가 검사 skip
+    //     if (!value) return true;
+
+    //     // 2. ⭐ 비밀번호 특별 검증 (더 상세한 메시지)
+    //     if (fieldId === 'password') {
+    //         const passwordValidation = this.validatePasswordss(value);
+    //         if (!passwordValidation.isValid) {
+    //             this.showFieldError(fieldId, passwordValidation.message);
+    //             return false;
+    //         }
+    //     }
+
+    //     // 3. 길이 검사
+    //     if (rules.minLength && value.length < rules.minLength) {
+    //         this.showFieldError(fieldId, `${this.getFieldName(fieldId)}는 ${rules.minLength}자 이상이어야 합니다.`);
+    //         return false;
+    //     }
+
+    //     if (rules.maxLength && value.length > rules.maxLength) {
+    //         this.showFieldError(fieldId, `${this.getFieldName(fieldId)}는 ${rules.maxLength}자 이하여야 합니다.`);
+    //         return false;
+    //     }
+
+    //     // 4. 패턴 검사 (비밀번호는 위에서 이미 처리)
+    //     if (rules.pattern && fieldId !== 'password' && !rules.pattern.test(value)) {
+    //         this.showFieldError(fieldId, rules.message);
+    //         return false;
+    //     }
+
+    //     // 5. 필드 매치 검사 (비밀번호 확인)
+    //     if (rules.matchField) {
+    //         const matchValue = document.querySelector(`#${rules.matchField}`).value;
+    //         if (value !== matchValue) {
+    //             this.showFieldError(fieldId, rules.message);
+    //             return false;
+    //         }
+    //     }
+
+    //     // 6. ⭐ 특별 검사: 아이디 중복확인 (자동 실행)
+    //     if (fieldId === 'username' && value.length >= 3) {
+    //         const result = await this.autoCheckUsername(value);
+    //         if (!result.success) {
+    //             this.showFieldError(fieldId, result.message);
+    //             return false;
+    //         }
+    //     }
+
+    //     // 7. 모든 검사 통과 시 성공 표시
+    //     this.showFieldSuccess(fieldId, '✓ 올바른 형식입니다.');
+    //     return true;
+    // }
+
+    /**
+         * 🔐 비밀번호 상세 검증
+         */
+    validatePassword(password) {
+        const checks = {
+            length: password.length >= 8,
+            lowercase: /[a-z]/.test(password),
+            number: /\d/.test(password),
+            noSpaces: !/\s/.test(password)  // ⭐ 공백 체크
+        };
+
+        // 실패한 조건들 체크
+        const failedChecks = [];
+
+        if (!checks.length) {
+            failedChecks.push('8자 이상');
+        }
+        if (!checks.lowercase) {
+            failedChecks.push('영소문자 포함');
+        }
+        if (!checks.number) {
+            failedChecks.push('숫자 포함');
+        }
+        if (!checks.noSpaces) {
+            failedChecks.push('공백 제외');
+        }
+
+        if (failedChecks.length > 0) {
+            return {
+                isValid: false,
+                message: `비밀번호는 ${failedChecks.join(', ')}이 필요합니다.`
+            };
+        }
+
+        return {
+            isValid: true,
+            message: '안전한 비밀번호입니다.'
+        };
+    }
+
 
     loadStyles() {
         styleManager.loadStyle(this.styleId, registerPageStyles);
@@ -51,19 +302,19 @@ class RegisterPage {
             this.handleTabClick(target);
         }
 
-           // 2. 가입 버튼 클릭 처리
-    if (target.classList.contains('signup-btn')) {
-        event.preventDefault(); // form submit 방지
-        this.validateAndSubmitForm(); 
-        return;
-    }
+        // 2. 가입 버튼 클릭 처리
+        if (target.classList.contains('signup-btn')) {
+            event.preventDefault(); // form submit 방지
+            this.validateAndSubmitForm();
+            return;
+        }
 
-    // 3. 중복확인
-    if (target.classList.contains('verify-btn')) {
-        event.preventDefault(); // form submit 방지
-        await this.handleIdCheck(); // 중복확인
-        return;
-    }
+        // 3. 중복확인
+        if (target.classList.contains('verify-btn')) {
+            event.preventDefault(); // form submit 방지
+            await this.handleIdCheck(); // 중복확인
+            return;
+        }
 
     }
 
@@ -73,30 +324,30 @@ class RegisterPage {
      */
     async handleIdCheck(button) {
         console.log('🔍 ID 중복확인 시작');
-        
+
         // 현재 입력된 아이디 가져오기
         const usernameInput = document.querySelector('#username');
         const username = usernameInput.value.trim();
-    
-        
+
+
         // this.hideMessage(messageEl);
-        
-        
+
+
         // 1. 입력값 검증
         if (!username) {
             this.showMessage('아이디를 입력해주세요.');
             usernameInput.focus();
             return;
         }
-        
+
         if (username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username)) {
             this.showMessage('ID는 20자 이내의 영어, 숫자만 가능합니다.');
             return;
         }
-        
+
         this.showMessage('확인 중...');
         // this.setButtonLoading(button, true);
-        
+
         try {
             // 3. ⭐ API 요청 (async)
             const response = await fetch(`${this.apiBaseUrl}/accounts/validate-username/`, {
@@ -106,79 +357,79 @@ class RegisterPage {
                 },
                 body: JSON.stringify({ username: username })
             });
-            
+
             if (response.ok) {
                 this.showMessage('✓ 사용 가능한 아이디입니다!', 'success');
                 console.log('✅ ID 중복확인 성공');
-                
+
             } else {
                 // ❌ 실패
                 const errorData = await response.json();
-                
+
                 let errorText = '이미 사용 중인 아이디입니다.';
                 if (errorData.detail) {
                     errorText = errorData.detail;
                 } else if (errorData.username) {
                     errorText = errorData.username[0];
                 }
-                this.showMessage( errorText, 'error');
-                
+                this.showMessage(errorText, 'error');
+
                 console.log('❌ ID 중복확인 실패:', errorText);
             }
-            
+
         } catch (error) {
             // 🚨 네트워크 오류
             console.error('❌ ID 중복확인 API 오류:', error);
-            
+
             this.hideMessage(loadingMessage);
-            this.showMessage( '네트워크 오류가 발생했습니다.', 'error');
-            
+            this.showMessage('네트워크 오류가 발생했습니다.', 'error');
+
         } finally {
             // 5. 로딩 상태 해제
             this.setButtonLoading(button, false);
         }
     }
 
-//     // 메시지 표시 함수
-//     showMessage(element, text, type = 'info') {
-//     const messageEl = document.getElementById('buyer-id-message');
-        
-//     element.textContent = text;
-//     element.className = `message ${type} visible`;
-//     element.style.display = 'block';
-    
-//     // 부드러운 애니메이션
-//     element.style.opacity = '1';
-// }
+    //     // 메시지 표시 함수
+    //     showMessage(element, text, type = 'info') {
+    //     const messageEl = document.getElementById('buyer-id-message');
 
-showMessage(text, type = 'info') {
-    const messageContainer = document.getElementById('buyer-id-message');
-    const messageText = messageContainer.querySelector('.message-text');
-    
-    if (!messageContainer || !messageText) {
-        console.error('메시지 요소를 찾을 수 없습니다:', messageId);
-        return;
+    //     element.textContent = text;
+    //     element.className = `message ${type} visible`;
+    //     element.style.display = 'block';
+
+    //     // 부드러운 애니메이션
+    //     element.style.opacity = '1';
+    // }
+
+    showMessage(text, type = 'info') {
+        const messageContainer = document.getElementById('buyer-id-message');
+        const messageText = messageContainer.querySelector('.message-text');
+
+        if (!messageContainer || !messageText) {
+            console.error('메시지 요소를 찾을 수 없습니다:', messageId);
+            return;
+        }
+
+        // 메시지 내용 설정
+        messageText.textContent = text;
+
+        // 타입별 클래스 설정
+        messageContainer.className = `message-container visible ${type}`;
+
+        // ✅ 숨김 → 표시 애니메이션
+        messageContainer.style.display = 'block';
+        messageContainer.style.opacity = '0';
+        messageContainer.style.transform = 'translateY(-10px)';
+
+        // 부드러운 나타나기 애니메이션
+        setTimeout(() => {
+            messageContainer.style.opacity = '1';
+            messageContainer.style.transform = 'translateY(0)';
+        }, 10);
+
+        console.log(`📢 메시지 표시: [${type}] ${text}`);
     }
-    
-    // 메시지 내용 설정
-    messageText.textContent = text;
-    
-    // 타입별 클래스 설정
-    messageContainer.className = `message-container visible ${type}`;
-    
-    // ✅ 숨김 → 표시 애니메이션
-    messageContainer.style.display = 'block';
-    messageContainer.style.opacity = '0';
-    messageContainer.style.transform = 'translateY(-10px)';
-    
-    // 부드러운 나타나기 애니메이션
-    setTimeout(() => {
-        messageContainer.style.opacity = '1';
-        messageContainer.style.transform = 'translateY(0)';
-    }, 10);
-    
-    console.log(`📢 메시지 표시: [${type}] ${text}`);
-}
 
 
     validateAndSubmitForm() {
@@ -420,7 +671,7 @@ showMessage(text, type = 'info') {
             this.clearAllWarningsAndSuccessMessages();
         }, 3000);
     }
-  
+
 
     /**
      * 🔄 탭 클릭 처리 (UI만 변경)

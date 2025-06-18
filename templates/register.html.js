@@ -26,17 +26,24 @@ export const registerPageTemplate = () => `
 
                 <div class="form-group">
                     <label for="buyer-password">비밀번호</label>
-                    <input type="password" id="buyer-password" placeholder="비밀번호를 입력해주세요">
+                    <input type="password" id="password-input" placeholder="비밀번호를 입력해주세요">
+                    <div id="password-message" class="password-container hidden">
+                    <span class="message-text"></span>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label for="buyer-password-confirm">비밀번호 재확인</label>
                     <input type="password" id="buyer-password-confirm" placeholder="비밀번호를 다시 입력해주세요">
+                    <div id="re-password-message" class="re-password-container hidden">
+                    <span class="re-message-text"></span>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label for="buyer-name">이름</label>
                     <input type="text" id="buyer-name" placeholder="이름을 입력해주세요">
+                  
                 </div>
 
                 <div class="form-group">
