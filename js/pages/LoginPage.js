@@ -8,6 +8,8 @@ export default class LoginPage {
         this.pageTitle = "HODU - 로그인";
         this.currentTab = 'buyer'; // 'buyer' 또는 'seller'
         this.styleId = 'login-page-styles';
+        this.apiBaseUrl = 'https://api.wenivops.co.kr/services/open-market';
+        this.isLoading = false;
     }
 
     render() {
@@ -24,6 +26,7 @@ export default class LoginPage {
         page.addEventListener('click', 
             this.handlePageClick.bind(this));
         
+            // this.setupInputEvents(page);
 
             return page;
 
@@ -48,7 +51,14 @@ export default class LoginPage {
      
     handlePageClick(event) {
         const target = event.target;
-        console.log(`handlePageClick 이벤트위임완료`);
+        console.log('🖱️ 클릭 이벤트 발생:', target.className, target.id);
+        
+
+       // 2. 로그인 버튼
+       if (target.classList.contains('login-btn') || target.type === 'submit') {
+        event.preventDefault();
+        this.handleLoginClick(event);
+    }
         // data-action 속성으로 구분
         // if (target.dataset.action === 'login') {
         //     console.log('로그인 클릭');
@@ -65,336 +75,6 @@ export default class LoginPage {
             window.router.navigateTo('/register');
         }
     }
-
-
-    // addStyles() {
-    //     if (!document.getElementById('auth-page-styles')) {
-    //         const style = document.createElement('style');
-    //         style.id = 'auth-page-styles';
-    //         style.textContent = `
-    //             .auth-page {
-    //                 min-height: 100vh;
-    //                 background: #f8f9fa;
-    //                 display: flex;
-    //                 align-items: center;
-    //                 justify-content: center;
-    //                 padding: 2rem 1rem;
-    //                 font-family: 'Spoqa Han Sans Neo', sans-serif;
-    //             }
-
-    //             .auth-container {
-    //                 width: 100%;
-    //                 max-width: 440px;
-    //                 background: white;
-    //                 padding: 0;
-    //                 border-radius: 10px;
-    //                 box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    //                 overflow: hidden;
-    //             }
-
-    //             .logo-section {
-    //                 background: white;
-    //                 padding: 3rem 0 2rem 0;
-    //                 text-align: center;
-    //             }
-
-    //             .logo {
-    //                 font-size: 3rem;
-    //                 font-weight: 900;
-    //                 color: #21BF48;
-    //                 margin: 0;
-    //                 letter-spacing: 2px;
-    //             }
-
-    //             .auth-form-container {
-    //                 padding: 0;
-    //             }
-
-    //             .tab-container {
-    //                 display: flex;
-    //                 border-bottom: 1px solid #e9ecef;
-    //             }
-
-    //             .tab-btn {
-    //                 flex: 1;
-    //                 padding: 1.2rem;
-    //                 border: none;
-    //                 background: #f8f9fa;
-    //                 color: #6c757d;
-    //                 font-size: 1rem;
-    //                 font-weight: 500;
-    //                 cursor: pointer;
-    //                 transition: all 0.3s ease;
-    //                 border-bottom: 2px solid transparent;
-    //             }
-
-    //             .tab-btn.active {
-    //                 background: white;
-    //                 color: #495057;
-    //                 border-bottom-color: #21BF48;
-    //                 font-weight: 600;
-    //             }
-
-    //             .tab-btn:hover:not(.active) {
-    //                 background: #e9ecef;
-    //                 color: #495057;
-    //             }
-
-    //             .auth-form {
-    //                 padding: 2rem;
-    //             }
-
-    //             .form-group {
-    //                 margin-bottom: 1rem;
-    //             }
-
-    //             .form-input {
-    //                 width: 100%;
-    //                 padding: 1rem;
-    //                 border: 1px solid #e9ecef;
-    //                 border-radius: 5px;
-    //                 font-size: 1rem;
-    //                 background: #f8f9fa;
-    //                 transition: all 0.3s ease;
-    //                 box-sizing: border-box;
-    //             }
-
-    //             .form-input:focus {
-    //                 outline: none;
-    //                 border-color: #21BF48;
-    //                 background: white;
-    //                 box-shadow: 0 0 0 2px rgba(33, 191, 72, 0.1);
-    //             }
-
-    //             .form-input::placeholder {
-    //                 color: #adb5bd;
-    //             }
-
-    //             .login-btn {
-    //                 width: 100%;
-    //                 padding: 1rem;
-    //                 background: #21BF48;
-    //                 color: white;
-    //                 border: none;
-    //                 border-radius: 5px;
-    //                 font-size: 1.1rem;
-    //                 font-weight: 600;
-    //                 cursor: pointer;
-    //                 transition: all 0.3s ease;
-    //                 margin-top: 1rem;
-    //             }
-
-    //             .login-btn:hover {
-    //                 background: #1ea63c;
-    //                 transform: translateY(-1px);
-    //                 box-shadow: 0 4px 12px rgba(33, 191, 72, 0.3);
-    //             }
-
-    //             .login-btn:active {
-    //                 transform: translateY(0);
-    //             }
-
-    //             .auth-links {
-    //                 text-align: center;
-    //                 padding: 1.5rem 2rem 2rem 2rem;
-    //                 background: #f8f9fa;
-    //                 border-top: 1px solid #e9ecef;
-    //             }
-
-    //             .link {
-    //                 color: #6c757d;
-    //                 text-decoration: none;
-    //                 font-size: 0.9rem;
-    //                 transition: color 0.3s ease;
-    //             }
-
-    //             .link:hover {
-    //                 color: #21BF48;
-    //                 text-decoration: underline;
-    //             }
-
-    //             .divider {
-    //                 margin: 0 1rem;
-    //                 color: #dee2e6;
-    //             }
-
-    //             /* 로딩 상태 */
-    //             .login-btn.loading {
-    //                 background: #95a5a6;
-    //                 cursor: not-allowed;
-    //                 position: relative;
-    //                 overflow: hidden;
-    //             }
-
-    //             .login-btn.loading::after {
-    //                 content: '';
-    //                 position: absolute;
-    //                 top: 50%;
-    //                 left: 50%;
-    //                 width: 20px;
-    //                 height: 20px;
-    //                 border: 2px solid transparent;
-    //                 border-top: 2px solid white;
-    //                 border-radius: 50%;
-    //                 animation: spin 1s linear infinite;
-    //                 transform: translate(-50%, -50%);
-    //             }
-
-    //             @keyframes spin {
-    //                 0% { transform: translate(-50%, -50%) rotate(0deg); }
-    //                 100% { transform: translate(-50%, -50%) rotate(360deg); }
-    //             }
-
-    //             /* 에러 상태 */
-    //             .form-input.error {
-    //                 border-color: #dc3545;
-    //                 background: #fff5f5;
-    //             }
-
-    //             .error-message {
-    //                 color: #dc3545;
-    //                 font-size: 0.85rem;
-    //                 margin-top: 0.5rem;
-    //                 display: none;
-    //             }
-
-    //             .error-message.show {
-    //                 display: block;
-    //             }
-
-    //             /* 성공 상태 */
-    //             .form-input.success {
-    //                 border-color: #28a745;
-    //                 background: #f8fff9;
-    //             }
-
-    //             /* 반응형 디자인 */
-    //             @media (max-width: 480px) {
-    //                 .auth-page {
-    //                     padding: 1rem;
-    //                 }
-
-    //                 .auth-container {
-    //                     max-width: 100%;
-    //                     margin: 0;
-    //                 }
-
-    //                 .logo {
-    //                     font-size: 2.5rem;
-    //                 }
-
-    //                 .logo-section {
-    //                     padding: 2rem 0 1.5rem 0;
-    //                 }
-
-    //                 .tab-btn {
-    //                     font-size: 0.9rem;
-    //                     padding: 1rem 0.5rem;
-    //                 }
-
-    //                 .auth-form {
-    //                     padding: 1.5rem;
-    //                 }
-
-    //                 .form-input {
-    //                     padding: 0.9rem;
-    //                 }
-
-    //                 .login-btn {
-    //                     padding: 0.9rem;
-    //                     font-size: 1rem;
-    //                 }
-    //             }
-
-    //             /* 접근성 개선 */
-    //             .tab-btn:focus,
-    //             .form-input:focus,
-    //             .login-btn:focus,
-    //             .link:focus {
-    //                 outline: 2px solid #21BF48;
-    //                 outline-offset: 2px;
-    //             }
-
-    //             /* 다크모드 대응 */
-    //             @media (prefers-color-scheme: dark) {
-    //                 .auth-page {
-    //                     background: #1a1a1a;
-    //                 }
-
-    //                 .auth-container {
-    //                     background: #2d3748;
-    //                     box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    //                 }
-
-    //                 .logo-section {
-    //                     background: #2d3748;
-    //                 }
-
-    //                 .tab-btn {
-    //                     background: #4a5568;
-    //                     color: #a0aec0;
-    //                 }
-
-    //                 .tab-btn.active {
-    //                     background: #2d3748;
-    //                     color: #e2e8f0;
-    //                 }
-
-    //                 .form-input {
-    //                     background: #4a5568;
-    //                     border-color: #718096;
-    //                     color: #e2e8f0;
-    //                 }
-
-    //                 .form-input::placeholder {
-    //                     color: #a0aec0;
-    //                 }
-
-    //                 .auth-links {
-    //                     background: #4a5568;
-    //                     border-top-color: #718096;
-    //                 }
-
-    //                 .link {
-    //                     color: #a0aec0;
-    //                 }
-    //             }
-
-    //             /* 페이지 진입 애니메이션 */
-    //             .auth-page {
-    //                 animation: fadeIn 0.5s ease-out;
-    //             }
-
-    //             @keyframes fadeIn {
-    //                 from {
-    //                     opacity: 0;
-    //                     transform: translateY(20px);
-    //                 }
-    //                 to {
-    //                     opacity: 1;
-    //                     transform: translateY(0);
-    //                 }
-    //             }
-
-    //             .auth-container {
-    //                 animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    //             }
-
-    //             @keyframes slideUp {
-    //                 from {
-    //                     opacity: 0;
-    //                     transform: translateY(40px) scale(0.95);
-    //                 }
-    //                 to {
-    //                     opacity: 1;
-    //                     transform: translateY(0) scale(1);
-    //                 }
-    //             }
-    //         `;
-    //         document.head.appendChild(style);
-    //     }
-    // }
-
 
     switchTab(tab) {
         this.currentTab = tab;
@@ -448,6 +128,331 @@ export default class LoginPage {
         } finally {
             this.setLoadingState(false);
         }
+    }
+
+    setupLoginPageLogic() {
+        const authForm = document.getElementById('authForm');
+        const userIdInput = document.getElementById('userId');
+        const passwordInput = document.getElementById('password');
+        const userIdWarning = document.getElementById('userIdWarning');
+        const passwordWarning = document.getElementById('passwordWarning');
+        const tabContainer = document.querySelector('.tab-container');
+
+        // --- Tab Switching Logic ---
+        tabContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('tab-btn')) {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                this.currentTab = event.target.dataset.tab;
+                this.clearWarnings();
+                userIdInput.value = '';
+                passwordInput.value = '';
+            }
+        });
+
+        // --- Form Submission and Validation ---
+        authForm.addEventListener('submit', (event) => {
+            console.log(`로그인 이벤트 크르르이이익`);
+            event.preventDefault(); // Prevent default form submission
+
+            this.clearWarnings(); // Clear previous warnings
+
+            const userId = userIdInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            let isValid = true;
+
+            // 1. Check if fields are empty
+            if (!userId) {
+                userIdWarning.textContent = '아이디를 입력해주세요.';
+                userIdInput.focus();
+                isValid = false;
+            }
+            if (!password) {
+                passwordWarning.textContent = '비밀번호를 입력해주세요.';
+                if (isValid) {
+                    passwordInput.focus();
+                }
+                isValid = false;
+            }
+
+            if (!isValid) {
+                return; // Stop if any field is empty
+            }
+
+            // Simulate login (replace with actual API call)
+            const correctBuyerId = 'hodubuyer';
+            const correctBuyerPw = 'hodu1234';
+            const correctSellerId = 'hoduseller';
+            const correctSellerPw = 'seller1234';
+
+            let credentialsMatch = false;
+
+            if (this.currentTab === 'buyer') {
+                if (userId === correctBuyerId && password === correctBuyerPw) {
+                    credentialsMatch = true;
+                }
+            } else if (this.currentTab === 'seller') {
+                if (userId === correctSellerId && password === correctSellerPw) {
+                    credentialsMatch = true;
+                }
+            }
+
+            // 2. Check for incorrect credentials
+            if (!credentialsMatch) {
+                passwordWarning.textContent = '아이디 또는 비밀번호가 일치하지 않습니다.';
+                passwordInput.value = ''; // Clear password field
+                passwordInput.focus();
+                return;
+            }
+
+            // --- Successful Login ---
+            alert(`${this.currentTab === 'buyer' ? '구매회원' : '판매회원'} 로그인 성공!`);
+            console.log("로그인 성공! 이전 페이지로 이동합니다.");
+            // In a real application, you'd use window.history.back() or a router
+            // window.history.back();
+        });
+
+        // --- Clear warnings on input focus/typing ---
+        userIdInput.addEventListener('input', () => {
+            if (userIdWarning.textContent) {
+                userIdWarning.textContent = '';
+            }
+        });
+
+        passwordInput.addEventListener('input', () => {
+            if (passwordWarning.textContent) {
+                passwordWarning.textContent = '';
+            }
+        });
+    }
+
+    
+    async handleLoginClick(event) {
+        console.log('🔐 로그인 버튼 클릭');
+        
+        if (this.isLoading) {
+            console.log('⚠️ 이미 로그인 요청 중...');
+            return;
+        }
+        
+        const userIdInput = document.querySelector('#userId');
+        const passwordInput = document.querySelector('#password');
+        
+        const userId = userIdInput.value.trim();
+        const password = passwordInput.value.trim();
+        
+        // 1. 입력 유효성 검사
+        if (!this.validateInputs(userId, password, userIdInput, passwordInput)) {
+            return;
+        }
+        
+        // 2. API 로그인 요청
+        await this.performLogin(userId, password);
+    }
+
+     /**
+     * 📡 실제 API 로그인 요청
+     */
+     async performLogin(userId, password) {
+        this.setLoadingState(true);
+        
+        try {
+            console.log('📡 API 로그인 요청 시작:', { userId, userType: this.currentTab });
+            
+            const loginData = {
+                username: userId,
+                password: password,
+                login_type: this.currentTab.toUpperCase() // BUYER 또는 SELLER
+            };
+            
+            const response = await fetch(`${this.apiBaseUrl}/accounts/login/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginData)
+            });
+            
+            console.log('📡 API 응답 상태:', response.status);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ 로그인 성공:', data);
+                
+                await this.handleLoginSuccess(data, userId);
+                
+            } else {
+                const errorData = await response.json();
+                console.log('❌ 로그인 실패:', errorData);
+                
+                this.handleLoginFailure(errorData);
+            }
+            
+        } catch (error) {
+            console.error('❌ API 요청 오류:', error);
+            this.showError('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+            
+        } finally {
+            this.setLoadingState(false);
+        }
+    }
+
+    /**
+     * ✅ 입력 유효성 검사
+     */
+    validateInputs(userId, password, userIdInput, passwordInput) {
+        let isValid = true;
+        
+        // 아이디 입력 확인
+        if (!userId) {
+            this.showFieldError(userIdInput, '아이디를 입력해주세요.');
+            userIdInput.focus();
+            isValid = false;
+        }
+        
+        // 비밀번호 입력 확인
+        if (!password) {
+            this.showFieldError(passwordInput, '비밀번호를 입력해주세요.');
+            if (isValid) {
+                passwordInput.focus();
+            }
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+
+    /**
+     * ✅ 로그인 성공 처리
+     */
+    async handleLoginSuccess(data, userId) {
+        // 토큰 저장
+        if (data.token) {
+            localStorage.setItem('accessToken', data.token);
+            localStorage.setItem('refreshToken', data.refresh_token || '');
+        }
+        
+        // 사용자 정보 저장
+        const userInfo = {
+            id: userId,
+            username: data.username || userId,
+            userType: this.currentTab,
+            loginTime: new Date().toISOString(),
+            ...data.user // API에서 추가 사용자 정보가 있다면
+        };
+        
+        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+        
+        console.log('💾 사용자 정보 저장 완료:', userInfo);
+        
+        // 성공 메시지 표시
+        this.showSuccessMessage(`${userInfo.username || userId}님, 환영합니다!`);
+        
+        // 이전 페이지로 이동 (2초 후)
+        setTimeout(() => {
+            const previousPage = sessionStorage.getItem('previousPage') || '/';
+            sessionStorage.removeItem('previousPage');
+            
+            console.log('🔙 이전 페이지로 이동:', previousPage);
+            window.router.navigateTo(previousPage);
+        }, 2000);
+    }
+
+    /**
+     * ❌ 로그인 실패 처리
+     */
+    handleLoginFailure(errorData) {
+        const passwordInput = document.querySelector('#password');
+        
+        // 비밀번호 필드 초기화 및 포커스
+        passwordInput.value = '';
+        passwordInput.focus();
+        
+        // 에러 메시지 결정
+        let errorMessage = '로그인에 실패했습니다.';
+        
+        if (errorData.detail) {
+            if (errorData.detail.includes('자격 인증데이터')) {
+                errorMessage = '아이디 또는 비밀번호가 올바르지 않습니다.';
+            } else if (errorData.detail.includes('token')) {
+                errorMessage = '인증 오류가 발생했습니다.';
+            } else {
+                errorMessage = errorData.detail;
+            }
+        } else if (errorData.non_field_errors) {
+            errorMessage = errorData.non_field_errors[0] || errorMessage;
+        } else if (errorData.username) {
+            errorMessage = '아이디를 확인해주세요.';
+        } else if (errorData.password) {
+            errorMessage = '비밀번호를 확인해주세요.';
+        }
+        
+        this.showFieldError(passwordInput, errorMessage);
+        
+        // 폼에 오류 상태 추가
+        const form = document.querySelector('#authForm');
+        if (form) {
+            form.classList.add('error-state');
+            setTimeout(() => {
+                form.classList.remove('error-state');
+            }, 3000);
+        }
+
+        passwordInput.value = ''; // 비밀번호 필드 비우기
+        passwordInput.focus();    // 비밀번호 필드로 포커스 이동
+    }
+
+    /**
+     * ⏳ 로딩 상태 관리
+     */
+    setLoadingState(isLoading) {
+        this.isLoading = isLoading;
+        const loginBtn = document.querySelector('.login-btn');
+        
+        if (loginBtn) {
+            if (isLoading) {
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = `
+                    <span class="loading-spinner"></span>
+                    로그인 중...
+                `;
+                loginBtn.classList.add('loading');
+            } else {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '로그인';
+                loginBtn.classList.remove('loading');
+            }
+        }
+    }
+
+
+    // Helper function to clear all warning messages
+    clearWarnings() {
+        document.getElementById('userIdWarning').textContent = '';
+        document.getElementById('passwordWarning').textContent = '';
+    }
+
+
+    // 성공 메시지를 표시하는 헬퍼 메서드
+    showSuccessMessage(message) {
+        let successMessageElement = document.getElementById('successMessage');
+        if (!successMessageElement) {
+            successMessageElement = document.createElement('p');
+            successMessageElement.id = 'successMessage';
+            successMessageElement.className = 'success-message'; // CSS 스타일링을 위한 클래스 추가
+            const authForm = document.getElementById('authForm');
+            if (authForm) {
+                authForm.parentNode.insertBefore(successMessageElement, authForm.nextSibling);
+            }
+        }
+        successMessageElement.textContent = message;
+        successMessageElement.style.display = 'block'; // 보이게 처리
+
+        // 3초 후 메시지 자동 숨김
+        setTimeout(() => {
+            this.clearWarnings();
+        }, 3000);
     }
 
     authenticateUser(userId, password) {
@@ -611,5 +616,14 @@ export default class LoginPage {
         this.unloadStyles();
 
         console.log('✅ LoginPagfe 정리 완료');
+    }
+
+     // 에러 메시지를 위한 헬퍼 (선택 사항, 경고 메시지와 다르게 표시하고 싶을 때)
+     showErrorMessage(message) {
+        const passwordWarning = document.getElementById('passwordWarning'); // 기존 경고 메시지 영역 재활용
+        if (passwordWarning) {
+            passwordWarning.textContent = message;
+            passwordWarning.style.display = 'block';
+        }
     }
 }
