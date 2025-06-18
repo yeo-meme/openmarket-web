@@ -50,11 +50,6 @@ class RegisterPage {
             this.handleTabClick(target);
         }
 
-        // 2. 로그인 버튼
-        // if (target.classList.contains('login-btn') || target.type === 'submit') {
-        //     event.preventDefault();
-        //     this.handleLoginClick(event);
-        // }
         // data-action 속성으로 구분
         // if (target.dataset.action === 'login') {
         //     console.log('로그인 클릭');

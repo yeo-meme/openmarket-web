@@ -52,12 +52,14 @@ export const registerPageTemplate = () => `
                 <div class="form-group">
                     <input type="text" placeholder="인증번호를 입력해주세요">
                 </div>
-
+                 <div class="terms">
+                     <input type="checkbox" id="termsAgree">
+                    <label for="termsAgree">호두샵의 <u>이용약관</u> 및 <u>개인정보처리방침</u>에 대한 내용을 확인하였고 동의합니다.</label>
+                    <p class="warning-message" id="termsAgreeWarning"></p>
+                </div>
                 <button type="submit" class="signup-btn">가입하기</button>
 
-                <div class="terms">
-                    회원가입을 위해서는 <a href="#">이용약관</a> 및 <a href="#">개인정보처리방침</a>에 대한 동의가 필요합니다.
-                </div>
+          
             </form>
         </div>
     </div>
