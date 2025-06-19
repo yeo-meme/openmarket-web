@@ -107,7 +107,7 @@ class RegisterPage {
             };
             console.log('🔄 아이디 변경으로 인한 중복확인 상태 초기화');
         }
-        
+
     }
 
     /**
@@ -310,6 +310,7 @@ class RegisterPage {
         const isAllValid = this.checkAllFieldsValid();
 
         if (!isAllValid) {
+
             e.preventDefault(); // 폼 서브밋 차단
 
             console.error('❌ 서브밋 실패: 유효하지 않은 필드가 있습니다');
@@ -401,7 +402,7 @@ class RegisterPage {
 
 
 
-        if (this.checkAllValid()) {
+        if (this.showInvalidFieldMessages()) {
             console.log('✅ 모든 필드 검증 통과 - 회원가입 진행');
         } else {
             console.log('❌ 일부 필드가 유효하지 않음 - 회원가입 차단');
@@ -412,6 +413,56 @@ class RegisterPage {
         const allValid = Object.values(this.fieldsState).every(field => field.isValid);
         console.log(`전체 필드 유효성: ${allValid ? '✅' : '❌'}`);
         return allValid;
+    }
+
+    showInvalidFieldMessages() {
+        console.log('🔍 유효하지 않은 필드 메시지 출력 시작');
+        
+        const invalidFields = Object.entries(this.fieldsState)
+            .filter(([fieldName, fieldState]) => !fieldState.isValid)
+            .map(([fieldName, fieldState]) => {
+                console.log(`❌ ${fieldName} 필드 무효:`, fieldState.message);
+                
+                const messageElementId = this.getMessageElementId(fieldName);
+                
+                if (messageElementId) {
+                    this.showFieldMessage(messageElementId, {
+                        isValid: false,
+                        message: fieldState.message || '입력을 확인해주세요.'
+                    });
+                }
+                
+                return fieldName; // 무효한 필드명 반환
+            });
+        
+        // 전체 유효성 체크
+        const allValid = Object.values(this.fieldsState).every(field => field.isValid);
+        console.log(`전체 필드 유효성: ${allValid ? '✅' : '❌'}`);
+        console.log(`무효한 필드 수: ${invalidFields.length}`);
+        
+        return allValid;
+    }
+    
+    
+    // switch문을 별도 함수로 분리
+    getMessageElementId(fieldName) {
+        switch (fieldName) {
+            case 'password':
+                return 'password-message';
+            case 'passwordConfirm':
+                return 're-password-message';
+            case 'name':
+                return 'name-message';
+            case 'phone':
+                return 'phone-message';
+            case 'username':
+                return 'buyer-id-message';
+            case 'terms':
+                return 'terms-error-message';
+            default:
+                console.warn(`알 수 없는 필드: ${fieldName}`);
+                return null;
+        }
     }
 
     /**
