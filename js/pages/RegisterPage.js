@@ -13,13 +13,13 @@ class RegisterPage {
 
 
         this.fieldsState = {
-            username: { isValid: false, message: '', lastChecked: null },
-            password: { isValid: false, message: '', lastChecked: null },
-            passwordConfirm: { isValid: false, message: '', lastChecked: null },
-            name: { isValid: false, message: '', lastChecked: null },
-            phone: { isValid: false, message: '', lastChecked: null },
-            terms: { isValid: false, message: '', lastChecked: null },
-            idDupl: { isValid: false, message: '', lastChecked: null },
+            username: { isValid: false, message: '', value: '' },
+            password: { isValid: false, message: '', value: '' },
+            passwordConfirm: { isValid: false, message: '', value: '' },
+            name: { isValid: false, message: '', value: '' },
+            phone: { isValid: false, message: '', value: '' },
+            terms: { isValid: false, message: '', value: false },
+            idDupl: { isValid: false, message: '', value: '' },
         };
 
     }
@@ -42,6 +42,16 @@ class RegisterPage {
     }
 
 
+    // ✅ updateFieldState 함수 수정 (value 저장 추가)
+    updateFieldState(fieldName, result, inputValue = null) {
+        this.fieldsState[fieldName] = {
+            isValid: result.isValid,
+            message: result.message,
+            value: inputValue !== null ? inputValue : (this.fieldsState[fieldName]?.value || '')
+        };
+
+        console.log(`📝 ${fieldName} 상태 업데이트:`, this.fieldsState[fieldName]);
+    }
 
     /**
    * 🔥살려 입력 필드 변경 시 실시간 검증
@@ -96,14 +106,14 @@ class RegisterPage {
             result = { isValid: true, message: '✓ 사용 가능한 형식입니다. (중복확인 필요)' };
         }
 
-        this.updateFieldState('username', result);
+        this.updateFieldState('username', result, username);
         this.showFieldMessage('buyer-id-message', result);
 
         if (this.fieldsState.idDupl) {
-            this.fieldsState.idDupl = { 
-                isValid: false, 
-                message: '중복확인이 필요합니다.', 
-                lastChecked: null 
+            this.fieldsState.idDupl = {
+                isValid: false,
+                message: '중복확인이 필요합니다.',
+                lastChecked: null
             };
             console.log('🔄 아이디 변경으로 인한 중복확인 상태 초기화');
         }
@@ -157,7 +167,7 @@ class RegisterPage {
             result = { isValid: true, message: '✓ 올바른 이름입니다.' };
         }
 
-        this.updateFieldState('name', result);
+        this.updateFieldState('name', result, name);
         this.showFieldMessage('name-message', result);
     }
 
@@ -165,9 +175,9 @@ class RegisterPage {
      * 🔥살려 휴대폰 번호 실시간 검증
      */
     validatePhoneField() {
-        const phoneResult = this.validatePhoneNumber();
+        const phoneResult = this.validatePhoneNumber33();
 
-        this.updateFieldState('phone', phoneResult);
+        this.updateFieldState('phone', phoneResult, phoneResult.value || '');
         this.showFieldMessage('phone-message', phoneResult);
     }
 
@@ -204,7 +214,7 @@ class RegisterPage {
             result = { isValid: true, message: '✓ 비밀번호가 일치합니다.' };
         }
 
-        this.updateFieldState('passwordConfirm', result);
+        this.updateFieldState('passwordConfirm', result, passwordConfirm);
         this.showFieldMessage('re-password-message', result);
     }
     /**
@@ -226,7 +236,7 @@ class RegisterPage {
 
         const passwordInput = document.getElementById('password-input');
         const messageDiv = document.getElementById('password-message');
-        console.log(`passwordInputChange in!!!! ,: ${passwordInput.id}`);
+
         if (!passwordInput) {
             console.error('❌ password-input 요소를 찾을 수 없습니다');
             return;
@@ -248,7 +258,6 @@ class RegisterPage {
 
         if (!password) {
             console.log('📝 패스워드가 비어있음 - 상태 초기화');
-
             // 🔥 빈 패스워드일 때도 전역 상태 업데이트 (중요!)
             const emptyResult = {
                 isValid: false,
@@ -267,20 +276,11 @@ class RegisterPage {
 
         const result = this.validatePassword(password);
 
-        this.updateFieldState('password', result);
+        this.updateFieldState('password', result, password);
         this.showFieldMessage(messageDiv.id, result);
     }
 
-    /**
-  * 필드 상태 업데이트
-  */
-    updateFieldState(fieldName, result) {
-        this.fieldsState[fieldName] = {
-            isValid: result.isValid,
-            message: result.message,
-            lastChecked: new Date()
-        };
-    }
+
     /**
         * 모든 필드 상태 로깅
         */
@@ -295,6 +295,15 @@ class RegisterPage {
             name: this.fieldsState.name.isValid ? '✅' : '❌',
             phone: this.fieldsState.phone.isValid ? '✅' : '❌',
             terms: this.fieldsState.terms.isValid ? '✅' : '❌'
+        });
+
+        console.log('🔥 실시간 필드 값들:', {
+            username: this.fieldsState.username.value || '(빈값)',
+            password: this.fieldsState.password.value ? '***' : '(빈값)',
+            passwordConfirm: this.fieldsState.passwordConfirm.value ? '***' : '(빈값)',
+            name: this.fieldsState.name.value || '(빈값)',
+            phone: this.fieldsState.phone.value || '(빈값)',
+            terms: this.fieldsState.terms.value
         });
     }
 
@@ -377,6 +386,94 @@ class RegisterPage {
     }
 
 
+    async submitRegistration() {
+        console.log('🚀 회원가입 API 요청 시작');
+
+        try {
+            // 저장된 값들로 API 요청 데이터 구성
+            const requestData = {
+                username: this.fieldsState.username.value,
+                password: this.fieldsState.password.value,
+                name: this.fieldsState.name.value,
+                phone_number: this.fieldsState.phone.value,
+            };
+
+            console.log('📤 전송할 데이터:', requestData);
+
+            // 필수 값 검증
+            if (!requestData.username || !requestData.password || !requestData.name || !requestData.phone_number) {
+                console.error('❌ 필수 값 누락:', {
+                    username: !!requestData.username,
+                    password: !!requestData.password,
+                    name: !!requestData.name,
+                    phone_number: !!requestData.phone_number
+                });
+
+                alert('❌ 필수 입력 정보가 누락되었습니다.');
+                return { success: false, error: '필수 값 누락' };
+            }
+
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+
+            // API 요청
+            const response = await fetch(`${this.apiBaseUrl}/accounts/buyer/signup/`, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(requestData)
+            });
+
+            console.log('📡 API 응답 상태:', response.status);
+
+            if (response.ok) {
+                // ✅ 성공
+                const responseData = await response.json();
+                console.log('✅ 회원가입 성공:', responseData);
+
+                alert('🎉 회원가입이 완료되었습니다!');
+
+                // 성공 후 처리 (예: 로그인 페이지로 이동)
+                // window.location.href = '/login';
+                // 또는 router 사용
+                // this.router.navigateTo('/login');
+
+                return { success: true, data: responseData };
+
+            } else {
+                // ❌ 실패
+                const errorData = await response.json();
+                console.error('❌ 회원가입 실패:', errorData);
+
+                let errorMessage = '회원가입 중 오류가 발생했습니다.';
+
+                // 서버 에러 메시지 처리
+                if (errorData.username) {
+                    errorMessage = `아이디: ${errorData.username[0]}`;
+                } else if (errorData.password) {
+                    errorMessage = `비밀번호: ${errorData.password[0]}`;
+                } else if (errorData.name) {
+                    errorMessage = `이름: ${errorData.name[0]}`;
+                } else if (errorData.phone_number) {
+                    errorMessage = `전화번호: ${errorData.phone_number[0]}`;
+                } else if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                }
+
+                alert(`❌ ${errorMessage}`);
+
+                return { success: false, error: errorData };
+            }
+
+        } catch (error) {
+            // 🚨 네트워크 오류
+            console.error('❌ 회원가입 API 네트워크 오류:', error);
+            alert('❌ 네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+
+            return { success: false, error: error.message };
+        }
+    }
+
     async validateAllFields33() {
 
 
@@ -390,60 +487,72 @@ class RegisterPage {
             alert('❌ 아이디 중복확인을 완료해주세요!');
             return;
         }
-
-
         const termsResult = this.validateTermsField();
 
         if (!termsResult.isValid) {
             alert('❌ 이용약관 및 개인정보처리방침에 동의해주세요!');
             return;
         }
+        // if (this.showInvalidFieldMessages()) {
+        //     console.log('✅ 모든 필드 검증 통과 - 회원가입 진행');
+        // } else {
+        //     console.log('❌ 일부 필드가 유효하지 않음 - 회원가입 차단');
+        // }
 
-
-
-
+        // 3. 전체 필드 검증
         if (this.showInvalidFieldMessages()) {
-            console.log('✅ 모든 필드 검증 통과 - 회원가입 진행');
+            console.log('✅ 모든 필드 검증 통과 - 회원가입 API 호출');
+
+            // 🔥 회원가입 API 요청 실행
+            const result = await this.submitRegistration();
+
+            if (result.success) {
+                console.log('🎉 회원가입 완료!');
+            } else {
+                console.log('❌ 회원가입 실패');
+            }
+
         } else {
             console.log('❌ 일부 필드가 유효하지 않음 - 회원가입 차단');
+            alert('❌ 입력 정보를 확인해주세요!');
         }
     }
 
-    checkAllValid() {
-        const allValid = Object.values(this.fieldsState).every(field => field.isValid);
-        console.log(`전체 필드 유효성: ${allValid ? '✅' : '❌'}`);
-        return allValid;
-    }
+    // checkAllValid() {
+    //     const allValid = Object.values(this.fieldsState).every(field => field.isValid);
+    //     console.log(`전체 필드 유효성: ${allValid ? '✅' : '❌'}`);
+    //     return allValid;
+    // }
 
     showInvalidFieldMessages() {
         console.log('🔍 유효하지 않은 필드 메시지 출력 시작');
-        
+
         const invalidFields = Object.entries(this.fieldsState)
             .filter(([fieldName, fieldState]) => !fieldState.isValid)
             .map(([fieldName, fieldState]) => {
                 console.log(`❌ ${fieldName} 필드 무효:`, fieldState.message);
-                
+
                 const messageElementId = this.getMessageElementId(fieldName);
-                
+
                 if (messageElementId) {
                     this.showFieldMessage(messageElementId, {
                         isValid: false,
                         message: fieldState.message || '입력을 확인해주세요.'
                     });
                 }
-                
+
                 return fieldName; // 무효한 필드명 반환
             });
-        
+
         // 전체 유효성 체크
         const allValid = Object.values(this.fieldsState).every(field => field.isValid);
         console.log(`전체 필드 유효성: ${allValid ? '✅' : '❌'}`);
         console.log(`무효한 필드 수: ${invalidFields.length}`);
-        
+
         return allValid;
     }
-    
-    
+
+
     // switch문을 별도 함수로 분리
     getMessageElementId(fieldName) {
         switch (fieldName) {
@@ -564,7 +673,7 @@ class RegisterPage {
         }
 
         // 5. 휴대폰 번호 검증
-        const phoneResult = this.validatePhoneNumber();
+        const phoneResult = this.validatePhoneNumber33();
         if (!phoneResult.isValid) {
             this.showFieldError('phone-message', phoneResult.message);
             isValid = false;
@@ -627,8 +736,11 @@ class RegisterPage {
      * 📱 휴대폰 번호 검증
      */
     validatePhoneNumber() {
-        const phoneSelect = document.querySelector('.phone-select').value;
-        const phoneInput = document.querySelector('.phone-input').value.trim();
+        let isValid = false;
+        let message = ''; 
+
+        const phoneSelect = document.querySelector('.phone-select');
+        const phoneInput = document.querySelector('.phone-input');
 
         if (!phoneInput) {
             return {
@@ -637,21 +749,111 @@ class RegisterPage {
             };
         }
 
-        // 010으로 시작하는 10~11자리 숫자 체크
-        const fullPhoneNumber = phoneSelect + phoneInput;
+
+        const phonePrefix = phoneSelect.value;
+        const phoneNumber = phoneInput.value.trim();
+
+        
+        console.log('📱 전화번호 입력값:', {
+            prefix: phonePrefix,
+            number: phoneNumber
+        });
+        if (!phoneNumber) {
+            return {
+                isValid: false,
+                message: '휴대폰 번호를 입력해주세요.',
+                value: ''
+            };
+        }
+
+        const fullPhoneNumber = phonePrefix + phoneNumber;
 
         if (!/^010\d{8}$/.test(fullPhoneNumber) && !/^010\d{7}$/.test(fullPhoneNumber)) {
             return {
                 isValid: false,
-                message: '010으로 시작하는 10~11자리 숫자를 입력해주세요.'
+                message: '뒤에 7~8자리 숫자를 입력해주세요.'
             };
+        } else {
+            isValid = true;
+            message = '✓ 올바른 휴대폰 번호입니다.';
         }
 
+        console.log('📱 전화번호 검증:', { phonePrefix, phoneNumber });
+    
+    
+
+        const result = {
+            isValid: isValid,
+            message: message,
+            value: fullPhoneNumber
+        };
+
+        return result;
+    }
+
+    // ✅ 2. 전화번호 형식 수정 - API 요구사항에 맞게
+validatePhoneNumber33() {
+    const phoneSelect = document.querySelector('.phone-select');
+    const phoneInput = document.querySelector('.phone-input');
+    
+    if (!phoneInput || !phoneSelect) {
         return {
-            isValid: true,
-            phoneNumber: fullPhoneNumber
+            isValid: false,
+            message: '전화번호 입력 필드를 찾을 수 없습니다.',
+            value: ''
         };
     }
+    
+    const phonePrefix = phoneSelect.value; // "010"
+    const phoneNumber = phoneInput.value.trim(); // "12345678"
+    
+    console.log('📱 전화번호 검증:', { phonePrefix, phoneNumber });
+    
+    if (!phoneNumber) {
+        return {
+            isValid: false,
+            message: '휴대폰 번호를 입력해주세요.',
+            value: ''
+        };
+    }
+    
+    // 🔍 숫자만 입력되었는지 확인
+    if (!/^\d+$/.test(phoneNumber)) {
+        return {
+            isValid: false,
+            message: '숫자만 입력해주세요.',
+            value: phonePrefix + phoneNumber
+        };
+    }
+    
+    // 🔍 길이 확인 (7자리 또는 8자리)
+    if (phoneNumber.length < 7 || phoneNumber.length > 8) {
+        return {
+            isValid: false,
+            message: '7~8자리 숫자를 입력해주세요.',
+            value: phonePrefix + phoneNumber
+        };
+    }
+    
+    const fullPhoneNumber = phonePrefix + phoneNumber; // "01012345678"
+    
+    // 🔍 최종 전화번호 형식 확인
+    if (!/^01[0-9]\d{7,8}$/.test(fullPhoneNumber)) {
+        return {
+            isValid: false,
+            message: '올바른 휴대폰 번호 형식이 아닙니다.',
+            value: fullPhoneNumber
+        };
+    }
+    
+    console.log('📱 검증 성공:', fullPhoneNumber);
+    
+    return {
+        isValid: true,
+        message: '✓ 올바른 휴대폰 번호입니다.',
+        value: fullPhoneNumber
+    };
+}
 
     /**
      * 🔍 아이디 중복확인
@@ -784,17 +986,17 @@ class RegisterPage {
     /**
      * 📊 폼 데이터 수집
      */
-    collectFormData() {
-        const phoneResult = this.validatePhoneNumber();
+    // collectFormData() {
+    //     const phoneResult = this.validatePhoneNumber();
 
-        return {
-            username: document.getElementById('username').value.trim(),
-            password: document.getElementById('password-input').value,
-            name: document.getElementById('buyer-name').value.trim(),
-            phone_number: phoneResult.phoneNumber,
-            user_type: this.currentTab.toUpperCase() // BUYER 또는 SELLER
-        };
-    }
+    //     return {
+    //         username: document.getElementById('username').value.trim(),
+    //         password: document.getElementById('password-input').value,
+    //         name: document.getElementById('buyer-name').value.trim(),
+    //         phone_number: phoneResult.phoneNumber,
+    //         user_type: this.currentTab.toUpperCase() // BUYER 또는 SELLER
+    //     };
+    // }
 
     /**
      * 🚨 API 에러 처리
@@ -1019,8 +1221,8 @@ class RegisterPage {
             this.updateFieldState('username', result);
             this.showFieldMessage('buyer-id-message', result);
 
-            console.log('📊 username 상태 업데이트:', this.fieldsState.username);
-            console.log('📊 전체 유효성:', this.checkAllValid());
+            // console.log('📊 username 상태 업데이트:', this.fieldsState.username);
+            // console.log('📊 전체 유효성:', this.checkAllValid());
         }
 
         return result;
@@ -1338,27 +1540,27 @@ class RegisterPage {
     /**
      * 📝 회원가입 버튼 클릭 처리
      */
-    handleRegisterClick(event) {
-        console.log('📝 회원가입 버튼 클릭');
-        console.log('현재 선택된 탭:', this.currentTab);
+    // handleRegisterClick(event) {
+    //     console.log('📝 회원가입 버튼 클릭');
+    //     console.log('현재 선택된 탭:', this.currentTab);
 
-        // 폼 데이터 수집
-        const formData = this.getFormData();
+    //     // 폼 데이터 수집
+    //     const formData = this.getFormData();
 
-        if (this.validateForm(formData)) {
-            // 서버로 전송할 때 현재 탭 정보 포함
-            const registerData = {
-                ...formData,
-                userType: this.currentTab, // 'buyer' 또는 'seller'
-                login_type: this.currentTab.toUpperCase() // 'BUYER' 또는 'SELLER'
-            };
+    //     if (this.validateForm(formData)) {
+    //         // 서버로 전송할 때 현재 탭 정보 포함
+    //         const registerData = {
+    //             ...formData,
+    //             userType: this.currentTab, // 'buyer' 또는 'seller'
+    //             login_type: this.currentTab.toUpperCase() // 'BUYER' 또는 'SELLER'
+    //         };
 
-            console.log('📤 서버로 전송할 데이터:', registerData);
+    //         console.log('📤 서버로 전송할 데이터:', registerData);
 
-            // 실제 API 호출
-            this.performRegister(registerData);
-        }
-    }
+    //         // 실제 API 호출
+    //         this.performRegister(registerData);
+    //     }
+    // }
 
     /**
      * 📊 폼 데이터 수집
