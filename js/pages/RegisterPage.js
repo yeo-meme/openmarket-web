@@ -98,6 +98,16 @@ class RegisterPage {
 
         this.updateFieldState('username', result);
         this.showFieldMessage('buyer-id-message', result);
+
+        if (this.fieldsState.idDupl) {
+            this.fieldsState.idDupl = { 
+                isValid: false, 
+                message: '중복확인이 필요합니다.', 
+                lastChecked: null 
+            };
+            console.log('🔄 아이디 변경으로 인한 중복확인 상태 초기화');
+        }
+        
     }
 
     /**
@@ -368,12 +378,28 @@ class RegisterPage {
 
     async validateAllFields33() {
 
+
+        if (!this.fieldsState.idDupl.isValid) {
+            alert('❌ 아이디 중복확인을 완료해주세요!');
+            return;
+        }
+
+        const duplicateResult = await this.checkIdDuplicate();
+        if (!duplicateResult.isValid) {
+            alert('❌ 아이디 중복확인을 완료해주세요!');
+            return;
+        }
+
+
         const termsResult = this.validateTermsField();
 
         if (!termsResult.isValid) {
             alert('❌ 이용약관 및 개인정보처리방침에 동의해주세요!');
             return;
         }
+
+
+
 
         if (this.checkAllValid()) {
             console.log('✅ 모든 필드 검증 통과 - 회원가입 진행');
@@ -395,7 +421,7 @@ class RegisterPage {
         console.log('🔥 회원가입 버튼 클릭 - 전체 검증 시작');
 
         // 전체 필드 검증 실행 및 결과 확인
-        const isAllValid = await this.validateAllFields();
+        // const isAllValid = await this.validateAllFields();
 
         console.log('📊 전체 검증 결과:', isAllValid);
         console.log('📊 현재 필드 상태:', this.fieldsState);
@@ -820,7 +846,7 @@ class RegisterPage {
     /**
      * 🔍 ID 중복확인 async 처리
      */
-    async checkIdDuplicate(button) {
+    async checkIdDuplicate() {
         console.log('🔍 ID 중복확인 시작');
 
         // 현재 입력된 아이디 가져오기
@@ -845,7 +871,7 @@ class RegisterPage {
 
 
             usernameInput.focus();
-            return;
+            return result;
         }
 
         if (username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username)) {
@@ -858,7 +884,7 @@ class RegisterPage {
             this.updateFieldState('username', result);
             this.showFieldMessage('buyer-id-message', result);
 
-            return;
+            return result;
         }
 
         // 로딩 상태 표시
@@ -868,6 +894,12 @@ class RegisterPage {
         };
         this.updateFieldState('username', loadingResult);
         this.showFieldMessage('buyer-id-message', loadingResult);
+
+        // if (button) {
+        //     this.setButtonLoading(button, true);
+        // }
+        let result;
+
 
         try {
             // 3. ⭐ API 요청 (async)
@@ -923,8 +955,24 @@ class RegisterPage {
 
         } finally {
             // 5. 로딩 상태 해제
-            this.setButtonLoading(button, false);
+            // this.setButtonLoading(button, false);
         }
+
+        // 전역 상태 업데이트
+        this.updateFieldState('idDupl', result);
+        this.showFieldMessage('buyer-id-message', result);
+
+
+        // 4. 전역 상태 업데이트
+        if (result) {
+            this.updateFieldState('username', result);
+            this.showFieldMessage('buyer-id-message', result);
+
+            console.log('📊 username 상태 업데이트:', this.fieldsState.username);
+            console.log('📊 전체 유효성:', this.checkAllValid());
+        }
+
+        return result;
     }
 
 
