@@ -17,13 +17,8 @@ export default class HomePage {
         const headerSection = this.header.render();
         page.appendChild(headerSection);
 
-
         // 슬라이드 섹션 추가
         page.appendChild(this.heroSlider.render());
-
-        // 1. 히어로 슬라이더 섹션
-        // const sliderSection = this.heroSlider.render();
-        // page.appendChild(sliderSection);
 
         // 2. 상품 그리드 섹션
         const productSection = this.productGrid.render();
@@ -31,16 +26,8 @@ export default class HomePage {
         
         // 페이지 애니메이션
         this.addPageAnimation(page);
-        
-
 
         console.log('✅ HomePage 렌더링 완료: 슬라이더 + 상품그리드');
-        
-        // 상품 그리드 섹션 추가
-        // const container = document.createElement('div');
-        // container.className = 'container';
-        // container.appendChild(this.productGrid.render());
-        // page.appendChild(container);
         
         return page;
     }

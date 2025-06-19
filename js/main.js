@@ -161,7 +161,6 @@ class App {
     }
 
     async renderFullPage(app) {
-        // 전체 초기화
         app.innerHTML = '';
         
         // 페이지가 전체 구조를 담당

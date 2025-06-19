@@ -1,4 +1,6 @@
 import router from '../router.js';
+import { tokenManager } from '../utils/TokenManager.js';
+
 
 export default class Header {
     constructor(router) {
@@ -43,102 +45,100 @@ export default class Header {
     render() {
         const accessToken = localStorage.getItem('accessToken');
         const userInfo = localStorage.getItem('userInfo');
+
         let username = '';
-     
-        if (userInfo) {
+
+        if (userInfo && accessToken) { 
             try {
-
-                console.log('📋 삭제 전 로컬스토리지 상태:');
-                console.log('  - accessToken:', localStorage.getItem('accessToken'));
-                console.log('  - refreshToken:', localStorage.getItem('refreshToken'));
-                console.log('  - userInfo:', localStorage.getItem('userInfo'));
-
-
                 const userData = JSON.parse(userInfo);
-                console.log('📋 파싱된 사용자 정보:', userData);
-
                 username = userData.username || userData.id || '';
-                console.log('👤 추출된 사용자명:', username);
-
             } catch (e) {
                 console.error('사용자 정보 파싱 오류:', e);
             }
         }
-        // 로그인 상태에 따른 버튼 텍스트 결정
+
         const loginButtonText = accessToken ? `${username} 마이페이지` : '👤';
-
-
 
         const header = document.createElement('header');
         header.innerHTML = `
-       <div class="header-content">
-            <a href="#" class="logo">KODU</a>
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="상품을 검색해보세요">
-                <button class="search-btn">🔍</button>
-            </div>
-            <div class="header-actions">
-                <button class="header-btn cart-btn">🛒</button>
-                ${accessToken ? 
-                    `<button class="header-btn logout-btn">${loginButtonText}</button>` : 
-                    `<button class="header-btn login-btn">👤</button>`
-                }
-            </div>
-        </div>
-        `;
+      <div class="header-content">
+          <a href="#" class="logo">KODU</a>
+          <div class="search-container">
+              <input type="text" class="search-input" placeholder="상품을 검색해보세요">
+              <button class="search-btn">🔍</button>
+          </div>
+          <div class="header-actions">
+              <button class="header-btn cart-btn">🛒</button>
+              ${accessToken ?
+                `<button class="header-btn logout-btn">${loginButtonText}</button>` :
+                `<button class="header-btn login-btn">👤</button>`
+            }
+          </div>
+      </div>
+  `;
+
+        tokenManager.getValidAccessToken();
 
         this.attachEvents33(header);
         return header;
     }
 
     // 로그아웃 처리 메서드 수정
-    handleLogout() {
-        // 확인 다이얼로그
-        if (confirm('로그아웃 하시겠습니까?')) {
-            console.log('🚪 로그아웃 시작');
+    // handleLogout() {
+    //     // 확인 다이얼로그
+    //     if (confirm('로그아웃 하시겠습니까?')) {
+    //         console.log('🚪 로그아웃 시작');
 
-            // 삭제 전 현재 저장된 값들 확인
-            console.log('📋 삭제 전 로컬스토리지 상태:');
-            console.log('  - accessToken:', localStorage.getItem('accessToken'));
-            console.log('  - refreshToken:', localStorage.getItem('refreshToken'));
-            console.log('  - userInfo:', localStorage.getItem('userInfo'));
+    //         // 삭제 전 현재 저장된 값들 확인
+    //         console.log('📋 삭제 전 로컬스토리지 상태:');
+    //         console.log('  - accessToken:', localStorage.getItem('accessToken'));
+    //         console.log('  - refreshToken:', localStorage.getItem('refreshToken'));
+    //         console.log('  - userInfo:', localStorage.getItem('userInfo'));
 
-            // 로컬스토리지 토큰 및 사용자 정보 삭제
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('userInfo');
+    //         // 로컬스토리지 토큰 및 사용자 정보 삭제
+    //         localStorage.removeItem('accessToken');
+    //         localStorage.removeItem('refreshToken');
+    //         localStorage.removeItem('userInfo');
 
-            // 삭제 후 확인
-            console.log('🧹 삭제 후 로컬스토리지 상태:');
-            console.log('  - accessToken:', localStorage.getItem('accessToken'));
-            console.log('  - refreshToken:', localStorage.getItem('refreshToken'));
-            console.log('  - userInfo:', localStorage.getItem('userInfo'));
+    //         // 삭제 후 확인
+    //         console.log('🧹 삭제 후 로컬스토리지 상태:');
+    //         console.log('  - accessToken:', localStorage.getItem('accessToken'));
+    //         console.log('  - refreshToken:', localStorage.getItem('refreshToken'));
+    //         console.log('  - userInfo:', localStorage.getItem('userInfo'));
 
-            console.log('✅ 로그아웃 완료 - 모든 토큰 삭제됨');
+    //         console.log('✅ 로그아웃 완료 - 모든 토큰 삭제됨');
 
-            // 알림 표시
-            alert('로그아웃되었습니다.');
+    //         // 알림 표시
+    //         alert('로그아웃되었습니다.');
 
-            // 페이지 새로고침하여 헤더 업데이트
-            window.location.reload();
-        } else {
-            console.log('❌ 로그아웃 취소됨');
-        }
-    }
+    //         // 페이지 새로고침하여 헤더 업데이트
+    //         window.location.reload();
+    //     } else {
+    //         console.log('❌ 로그아웃 취소됨');
+    //     }
+    // }
 
 
 
     attachEvents33(header) {
-          // 액세스 토큰 확인
+        // 액세스 토큰 확인
         const accessToken = localStorage.getItem('accessToken');
-        
+
         if (accessToken) {
             // 로그인된 상태 - 로그아웃 버튼 이벤트
             const logoutBtn = header.querySelector('.logout-btn');
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
                     console.log('🚪 로그아웃 버튼 클릭됨');
-                    this.handleLogout();
+                    // this.handleLogout();
+                    if (confirm('로그아웃 하시겠습니까?')) {
+                        // 토큰매니저의 logout 메서드 사용
+                        tokenManager.logout();
+
+                        alert('로그아웃되었습니다.');
+                        // 페이지 새로고침으로 헤더 업데이트
+                        window.location.reload();
+                    }
                 });
             }
         } else {

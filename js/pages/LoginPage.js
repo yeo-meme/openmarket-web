@@ -1,6 +1,8 @@
 import { loginPageTemplate } from '../../templates/login.html.js'
 import { loginPageStyles } from '../../styles/login.css.js';
 import { styleManager } from '../utils/CSSManager.js';
+import { tokenManager } from '../utils/TokenManager.js';
+
 
 export default class LoginPage {
     constructor() {
@@ -229,9 +231,13 @@ export default class LoginPage {
      */
     async handleLoginSuccess(data, userId) {
         // 토큰 저장
-        if (data) {
-            localStorage.setItem('accessToken', data.access);
-            localStorage.setItem('refreshToken', data.refresh || '');
+        // if (data) {
+        //     localStorage.setItem('accessToken', data.access);
+        //     localStorage.setItem('refreshToken', data.refresh || '');
+        // }
+
+        if (data.access && data.refresh) {
+            tokenManager.saveTokens(data.access, data.refresh);
         }
         console.log(`액세스토큰 저장함요 ${localStorage.getItem('accessToken')}, refresh:${localStorage.getItem('refreshToken')}`);
 
