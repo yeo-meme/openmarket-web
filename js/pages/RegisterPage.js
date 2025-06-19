@@ -388,7 +388,7 @@ class RegisterPage {
                 // 성공 후 처리 (예: 로그인 페이지로 이동)
                 // window.location.href = '/login';
                 // 또는 router 사용
-                // this.router.navigateTo('/login');
+                window.router.navigateTo('/login');
 
                 return { success: true, data: responseData };
 
