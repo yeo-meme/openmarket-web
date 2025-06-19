@@ -41,6 +41,36 @@ export default class Header {
     }
 
     render() {
+
+        // 액세스 토큰 확인
+        const accessToken = localStorage.getItem('accessToken');
+        const userInfo = localStorage.getItem('userInfo');
+        let username = '';
+
+        if (userInfo) {
+            try {
+
+                console.log('📋 삭제 전 로컬스토리지 상태:');
+                console.log('  - accessToken:', localStorage.getItem('accessToken'));
+                console.log('  - refreshToken:', localStorage.getItem('refreshToken'));
+                console.log('  - userInfo:', localStorage.getItem('userInfo'));
+
+
+                const userData = JSON.parse(userInfo);
+                console.log('📋 파싱된 사용자 정보:', userData);
+
+                username = userData.username || userData.id || '';
+                console.log('👤 추출된 사용자명:', username);
+
+            } catch (e) {
+                console.error('사용자 정보 파싱 오류:', e);
+            }
+        }
+        // 로그인 상태에 따른 버튼 텍스트 결정
+        const loginButtonText = accessToken ? `${username} 마이페이지` : '👤';
+
+
+
         const header = document.createElement('header');
         header.innerHTML = `
        <div class="header-content">
@@ -52,6 +82,8 @@ export default class Header {
             <div class="header-actions">
                 <button class="header-btn cart-btn">🛒</button>
                 <button class="header-btn login-btn">👤</button>
+                <button class="header-btn login-btn">${loginButtonText}</button>
+
             </div>
         </div>
         `;
@@ -59,6 +91,42 @@ export default class Header {
         this.attachEvents(header);
         return header;
     }
+
+    // 로그아웃 처리 메서드 수정
+    // handleLogout() {
+    //     // 확인 다이얼로그
+    //     if (confirm('로그아웃 하시겠습니까?')) {
+    //         console.log('🚪 로그아웃 시작');
+
+    //         // 삭제 전 현재 저장된 값들 확인
+    //         console.log('📋 삭제 전 로컬스토리지 상태:');
+    //         console.log('  - accessToken:', localStorage.getItem('accessToken'));
+    //         console.log('  - refreshToken:', localStorage.getItem('refreshToken'));
+    //         console.log('  - userInfo:', localStorage.getItem('userInfo'));
+
+    //         // 로컬스토리지 토큰 및 사용자 정보 삭제
+    //         localStorage.removeItem('accessToken');
+    //         localStorage.removeItem('refreshToken');
+    //         localStorage.removeItem('userInfo');
+
+    //         // 삭제 후 확인
+    //         console.log('🧹 삭제 후 로컬스토리지 상태:');
+    //         console.log('  - accessToken:', localStorage.getItem('accessToken'));
+    //         console.log('  - refreshToken:', localStorage.getItem('refreshToken'));
+    //         console.log('  - userInfo:', localStorage.getItem('userInfo'));
+
+    //         console.log('✅ 로그아웃 완료 - 모든 토큰 삭제됨');
+
+    //         // 알림 표시
+    //         alert('로그아웃되었습니다.');
+
+    //         // 페이지 새로고침하여 헤더 업데이트
+    //         window.location.reload();
+    //     } else {
+    //         console.log('❌ 로그아웃 취소됨');
+    //     }
+    // }
+
 
     attachEvents(header) {
         // 👤 로그인 버튼 클릭 이벤트
@@ -70,13 +138,16 @@ export default class Header {
 
             // 2. 라우트 목록 확인
             console.log('등록된 라우트:', Object.keys(window.router?.routes || {}));
-            window.router.navigateTo('/login');
-            // if (window.router) {
-            //     window.router.navigateTo('/login');
-            //   } else {
-            //     console.error('라우터를 찾을 수 없습니다.');
-            //     window.location.href = '/login';
-            //   }
+            const accessToken = localStorage.getItem('accessToken');
+
+            if (accessToken) {
+                // 로그인된 상태 - 로그아웃 처리
+                this.handleLogout();
+            } else {
+                // 로그인되지 않은 상태 - 로그인 페이지로 이동
+                window.router.navigateTo('/login');
+            }
+
         });
     }
 

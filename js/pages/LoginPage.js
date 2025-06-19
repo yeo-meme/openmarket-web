@@ -188,6 +188,20 @@ export default class LoginPage {
             
             if (response.ok) {
                 const responseData = await response.json();
+                console.log('✅ 로그인 API 성공 - 전체 응답 데이터:');
+                console.log('📋 SUCCESS 응답:', responseData);
+                console.log('🔑 토큰 정보:');
+                console.log('  - access:', responseData.access);
+                console.log('  - refresh:', responseData.refresh);
+                console.log('👤 사용자 정보:');
+                console.log('  - user:', responseData.user);
+                if (responseData.user) {
+                    console.log('    - username:', responseData.user.username);
+                    console.log('    - name:', responseData.user.name);
+                    console.log('    - phone_number:', responseData.user.phone_number);
+                    console.log('    - user_type:', responseData.user.user_type);
+                }
+                
                 console.log('✅ 로그인 API 성공');
                 return { success: true, data: responseData };
             } else {
@@ -215,10 +229,11 @@ export default class LoginPage {
      */
     async handleLoginSuccess(data, userId) {
         // 토큰 저장
-        if (data.token) {
-            localStorage.setItem('accessToken', data.token);
-            localStorage.setItem('refreshToken', data.refresh_token || '');
+        if (data) {
+            localStorage.setItem('accessToken', data.access);
+            localStorage.setItem('refreshToken', data.refresh || '');
         }
+        console.log(`액세스토큰 저장함요 ${localStorage.getItem('accessToken')}, refresh:${localStorage.getItem('refreshToken')}`);
 
         // 사용자 정보 저장
         const userInfo = {
