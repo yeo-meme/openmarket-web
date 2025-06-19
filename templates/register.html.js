@@ -59,7 +59,7 @@ export const registerPageTemplate = () => `
                             <option value="018">018</option>
                             <option value="019">019</option>
                         </select>
-                        <input type="tel" class="phone-input" placeholder="휴대폰 번호를 입력해주세요">
+                        <input type="tel" class="phone-input" id="phone-input" placeholder="휴대폰 번호를 입력해주세요">
                           <div id="phone-message" class="phone-container hidden">
                          <span class="message-text"></span>
                          </div>

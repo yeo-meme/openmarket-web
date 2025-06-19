@@ -70,7 +70,6 @@ class RegisterPage {
             case 'buyer-name':
                 this.validateNameField();
                 break;
-            case 'buyer-phone':
             case 'phone-input': // 실제 ID에 맞게 조정
                 this.validatePhoneField();
                 break;
