@@ -236,8 +236,21 @@ class RegisterPage {
         const password = passwordInput.value;
 
         if (!password) {
+            console.log('📝 패스워드가 비어있음 - 상태 초기화');
+            
+            // 🔥 빈 패스워드일 때도 전역 상태 업데이트 (중요!)
+            const emptyResult = {
+                isValid: false,
+                message: '비밀번호를 입력해주세요.'
+            };
+            
+            this.updateFieldState('password', emptyResult);
+            
+            // UI 숨김
             messageDiv.classList.add('hidden');
             messageDiv.classList.remove('visible');
+            
+            console.log('📊 빈 패스워드 상태 업데이트:', this.fieldsState.password);
             return;
         }
 
