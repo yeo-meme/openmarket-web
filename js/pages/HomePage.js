@@ -24,7 +24,6 @@ export default class HomePage {
         const productSection = this.productGrid.render();
         page.appendChild(productSection);
         
-        // 페이지 애니메이션
         this.addPageAnimation(page);
 
         console.log('✅ HomePage 렌더링 완료: 슬라이더 + 상품그리드');

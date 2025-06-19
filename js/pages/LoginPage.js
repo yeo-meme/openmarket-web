@@ -5,6 +5,7 @@ import { tokenManager } from '../utils/TokenManager.js';
 
 
 export default class LoginPage {
+    
     constructor() {
         this.pageTitle = "HODU - 로그인";
         this.currentTab = 'buyer'; // 'buyer' 또는 'seller'
@@ -12,7 +13,6 @@ export default class LoginPage {
         this.apiBaseUrl = 'https://api.wenivops.co.kr/services/open-market';
         this.isLoading = false;
 
-        // 로그인 폼 상태 관리
         this.loginState = {
             username: { isValid: false, message: '', value: '' },
             password: { isValid: false, message: '', value: '' }

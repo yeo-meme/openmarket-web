@@ -11,7 +11,6 @@ class RegisterPage {
         this.styleId = 'register-page-styles';
         this.apiBaseUrl = 'https://api.wenivops.co.kr/services/open-market';
 
-
         this.fieldsState = {
             username: { isValid: false, message: '', value: '' },
             password: { isValid: false, message: '', value: '' },
@@ -21,7 +20,6 @@ class RegisterPage {
             terms: { isValid: false, message: '', value: false },
             idDupl: { isValid: false, message: '', value: '' },
         };
-
     }
 
 
@@ -54,7 +52,7 @@ class RegisterPage {
     }
 
     /**
-   * 🔥살려 입력 필드 변경 시 실시간 검증
+   *  입력 필드 변경 시 실시간 검증
    */
     handleInputChangeAll(e) {
         const fieldId = e.target.id;        // 이벤트가 발생한 요소의 ID
@@ -90,7 +88,7 @@ class RegisterPage {
     }
 
     /**
-   *🔥살려 아이디 필드 실시간 검증 (중복확인 제외)
+   * 아이디 필드 실시간 검증 (중복확인 제외)
    */
     validateUsernameField() {
         const username = document.getElementById('username').value.trim();
@@ -151,7 +149,7 @@ class RegisterPage {
 
 
     /**
-    * 🔥살려 이름 필드 실시간 검증
+    *  이름 필드 실시간 검증
     */
     validateNameField() {
         const name = document.getElementById('buyer-name').value.trim();
@@ -172,7 +170,7 @@ class RegisterPage {
     }
 
     /**
-     * 🔥살려 휴대폰 번호 실시간 검증
+     *  휴대폰 번호 실시간 검증
      */
     validatePhoneField() {
         const phoneResult = this.validatePhoneNumber33();
@@ -181,7 +179,7 @@ class RegisterPage {
         this.showFieldMessage('phone-message', phoneResult);
     }
 
-    /** 🔥살려
+    /** 
      * 약관 동의 실시간 검증
      */
     validateTermsField() {
@@ -218,7 +216,7 @@ class RegisterPage {
 
 
 
-    //🔥살려 패스워드 상세 체크 -- 전필드를 상시체크하고 플래그 값을 받아서 서브밋때 안된건 리젝 포스트전송도 
+    // 패스워드 상세 체크 -- 전필드를 상시체크하고 플래그 값을 받아서 서브밋때 안된건 리젝 포스트전송도 
     passwordInputChange() {
 
         const passwordInput = document.getElementById('password-input');
@@ -270,7 +268,7 @@ class RegisterPage {
 
 
     /**=
-  * 🔥살려 전체 밸류 로그 
+  *  전체 밸류 로그 
   * @returns {{[key in FieldName]: '✅'|'❌'}}
   */
     logFieldStates() {
@@ -305,7 +303,7 @@ class RegisterPage {
 
 
     /**
-    🔥살려 클릭
+     클릭
      */
     async handlePageClick(event) {
         const target = event.target;
@@ -335,7 +333,7 @@ class RegisterPage {
     }
 
     /**
-     * 🔥살려 api 요청시작 -회원가입 
+     *  api 요청시작 -회원가입 
      * @returns 
      */
     async submitRegistration() {
@@ -427,7 +425,7 @@ class RegisterPage {
     }
 
     /**
-     *  🔥살려 서브밋 버튼 이벤트 이후 서버전송전 유효성검사
+     *   서브밋 버튼 이벤트 이후 서버전송전 유효성검사
      * @returns 
      */
     async validateAllFields33() {
@@ -473,7 +471,7 @@ class RegisterPage {
     }
 
     /**
-     * 🔥살려 유효성 검사후 유효하지 않은 필드 로그 체크
+     *  유효성 검사후 유효하지 않은 필드 로그 체크
      * @returns 
      */
     showInvalidFieldMessages() {
@@ -506,7 +504,7 @@ class RegisterPage {
 
 
     /**
-     *  🔥살려 showMsg 출력을 위한 HTML엘레먼트겟
+     *   showMsg 출력을 위한 HTML엘레먼트겟
      * @param {*} fieldName 
      * @returns 
      */
@@ -532,7 +530,7 @@ class RegisterPage {
 
 
     /**
-     * 🔥살려 🔐 비밀번호 검증
+     *  🔐 비밀번호 검증
      */
     validatePassword(password) {
         if (!password) {
@@ -576,7 +574,7 @@ class RegisterPage {
 
 
     /**
-     *  🔥살려 휴대폰 검증
+     *   휴대폰 검증
      * @returns 
      */
     validatePhoneNumber33() {
@@ -645,7 +643,7 @@ class RegisterPage {
   
 
   /**
-   * 🔍  🔥살려 ID 중복확인 버튼
+   * 🔍   ID 중복확인 버튼
    * @returns 
    */
     async checkIdDuplicate() {
@@ -781,7 +779,7 @@ class RegisterPage {
 
 
     /**
-     *  🔥살려 🔄 탭 클릭 처리 (UI만 변경)
+     *   🔄 탭 클릭 처리 (UI만 변경)
      */
     handleTabClick(clickedTab) {
         const newTabType = clickedTab.dataset.tab;

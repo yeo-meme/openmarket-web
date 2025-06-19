@@ -154,10 +154,9 @@ export default class Header {
     }
 
     attachEvents(header) {
-        // 👤 로그인 버튼 클릭 이벤트
         const loginBtn = header.querySelector('.login-btn');
         loginBtn.addEventListener('click', () => {
-            // this.router.navigate('/login');  // 로그인 페이지로 이동
+            
             console.log('라우터 존재:', !!window.router);
             console.log('라우터 객체:', window.router);
 
@@ -168,22 +167,20 @@ export default class Header {
             console.log(`로그아웃전에 값확인: ${accessToken}`);
 
             if (accessToken) {
-                // 로그인된 상태 - 로그아웃 처리
                 this.handleLogout();
             } else {
-                // 로그인되지 않은 상태 - 로그인 페이지로 이동
                 window.router.navigateTo('/login');
             }
 
         });
     }
 
-    handleSearch(query) {
-        if (query.trim()) {
-            // 검색어가 있으면 상품 페이지로 이동
-            this.router.navigate(`/products?search=${encodeURIComponent(query)}`);
-        } else {
-            alert('검색어를 입력해주세요');
-        }
-    }
+    // handleSearch(query) {
+    //     if (query.trim()) {
+    //         // 검색어가 있으면 상품 페이지로 이동
+    //         this.router.navigate(`/products?search=${encodeURIComponent(query)}`);
+    //     } else {
+    //         alert('검색어를 입력해주세요');
+    //     }
+    // }
 }
