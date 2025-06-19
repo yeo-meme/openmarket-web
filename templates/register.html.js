@@ -10,7 +10,6 @@ export const registerPageTemplate = () => `
             <button class="tab-btn" data-tab="seller">판매회원가입</button>
         </div>
 
-        <!-- 구매회원가입 탭 -->
         <div id="buyer" class="tab-content active">
             <form>
                 <div class="form-group">
@@ -36,13 +35,16 @@ export const registerPageTemplate = () => `
                     <label for="buyer-password-confirm">비밀번호 재확인</label>
                     <input type="password" id="buyer-password-confirm" placeholder="비밀번호를 다시 입력해주세요">
                     <div id="re-password-message" class="re-password-container hidden">
-                    <span class="re-message-text"></span>
+                    <span class="message-text"></span>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="buyer-name">이름</label>
                     <input type="text" id="buyer-name" placeholder="이름을 입력해주세요">
+                    <div id="name-message" class="name-container hidden">
+                    <span class="message-text"></span>
+                    </div>
                   
                 </div>
 
@@ -58,17 +60,20 @@ export const registerPageTemplate = () => `
                             <option value="019">019</option>
                         </select>
                         <input type="tel" class="phone-input" placeholder="휴대폰 번호를 입력해주세요">
-                        
+                          <div id="phone-message" class="phone-container hidden">
+                         <span class="message-text"></span>
+                         </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <input type="text" placeholder="인증번호를 입력해주세요">
-                </div>
+
                  <div class="terms">
                      <input type="checkbox" id="termsAgree">
                     <label for="termsAgree">호두샵의 <u>이용약관</u> 및 <u>개인정보처리방침</u>에 대한 내용을 확인하였고 동의합니다.</label>
                     <p class="warning-message" id="termsAgreeWarning"></p>
+                        <div id="terms-message" class="terms-container hidden">
+                         <span class="message-text"></span>
+                         </div>
                 </div>
                 <button type="submit" class="signup-btn">가입하기</button>
 
@@ -76,7 +81,5 @@ export const registerPageTemplate = () => `
             </form>
         </div>
     </div>
-       
     </div>
-
         `;

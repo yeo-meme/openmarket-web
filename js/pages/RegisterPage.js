@@ -11,31 +11,226 @@ class RegisterPage {
         this.styleId = 'register-page-styles';
         this.apiBaseUrl = 'https://api.wenivops.co.kr/services/open-market';
 
+
+        this.fieldsState = {
+            username: { isValid: false, message: '', lastChecked: null },
+            password: { isValid: false, message: '', lastChecked: null },
+            passwordConfirm: { isValid: false, message: '', lastChecked: null },
+            name: { isValid: false, message: '', lastChecked: null },
+            phone: { isValid: false, message: '', lastChecked: null },
+            terms: { isValid: false, message: '', lastChecked: null }
+        };
+
     }
+
 
     render() {
         const page = document.createElement('main');
         page.className = 'register-page';
         page.innerHTML = registerPageTemplate();
+
         this.loadStyles();
 
         page.addEventListener('click',
             this.handlePageClick.bind(this));
 
-        // page.addEventListener('blur', this.handleInputBlur.bind(this), true);
-        page.addEventListener('input', this.passwordInputChange.bind(this));
+        page.addEventListener('input',
+            this.handleInputChangeAll.bind(this));
 
-        // this.attachEvents();
         return page;
     }
 
+
+
+    /**
+   * 입력 필드 변경 시 실시간 검증
+   */
+    handleInputChangeAll(e) {
+        const fieldId = e.target.id;        // 이벤트가 발생한 요소의 ID
+        const fieldType = e.target.type;    // input 타입 (text, password, etc.)
+        const tagName = e.target.tagName;   // HTML 태그명
+
+
+        console.log(`what!!1! ${fieldId} ,tagName : ${tagName}`);
+        // input/textarea가 아니면 무시
+        // if (tagName !== 'input' && tagName !== 'textarea') {
+        //     return;
+        // }
+
+        switch (fieldId) {
+            case 'username':
+                this.validateUsernameField();
+                break;
+            case 'password-input':
+                this.passwordInputChange();
+                break;
+            case 'buyer-password-confirm':
+                this.validatePasswordConfirmField();
+                break;
+            case 'buyer-name':
+                this.validateNameField();
+                break;
+            case 'buyer-phone':
+            case 'phone-input': // 실제 ID에 맞게 조정
+                this.validatePhoneField();
+                break;
+        }
+
+        this.logFieldStates();
+    }
+
+    /**
+   * 아이디 필드 실시간 검증 (중복확인 제외)
+   */
+    validateUsernameField() {
+        const username = document.getElementById('username').value.trim();
+        let result = { isValid: true, message: '' };
+
+        if (!username) {
+            result = { isValid: false, message: '아이디를 입력해주세요.' };
+        } else if (username.length < 3 || username.length > 20) {
+            result = { isValid: false, message: 'ID는 3~20자여야 합니다.' };
+        } else if (!/^[a-zA-Z0-9]+$/.test(username)) {
+            result = { isValid: false, message: 'ID는 영어, 숫자만 가능합니다.' };
+        } else {
+            result = { isValid: true, message: '✓ 사용 가능한 형식입니다. (중복확인 필요)' };
+        }
+
+        this.updateFieldState('username', result);
+        this.showFieldMessage('buyer-id-message', result);
+    }
+
+    /**
+    * 필드 메시지 표시
+    */
+    showFieldMessage(messageElementId,messageDivId, result) {
+
+        const messageDiv = document.getElementById(messageDivId);
+        console.log(`show in : ${messageElementId},messageDiv:${messageDiv.id} `);
+        console.log(`show in : ${messageElementId},messageDiv:${messageDiv} `);
+
+        // const messageDiv = document.getElementById(messageElementId);
+        if (!messageDiv) {
+            console.error('❌ message 요소를 찾을 수 없습니다');
+            return;
+        }
+
+        const messageText = messageDiv.querySelector('.message-text') || messageDiv;
+
+        if (!messageText) {
+            console.error('❌ messageText 요소를 찾을 수 없습니다');
+            return;
+        }
+        messageText.textContent = result.message;
+
+            console.error(`re eeeee ${result.message}`);
+        messageDiv.classList.remove('hidden');
+        messageDiv.classList.add('visible');
+        messageDiv.style.color = result.isValid ? 'green' : 'red';
+    }
+
+
+    /**
+    * 이름 필드 실시간 검증
+    */
+    validateNameField() {
+        const name = document.getElementById('buyer-name').value.trim();
+        let result = { isValid: true, message: '' };
+
+        if (!name) {
+            result = { isValid: false, message: '이름을 입력해주세요.' };
+        } else if (name.length < 2) {
+            result = { isValid: false, message: '이름은 2자 이상 입력해주세요.' };
+        } else if (!/^[가-힣a-zA-Z\s]+$/.test(name)) {
+            result = { isValid: false, message: '이름은 한글, 영어만 입력 가능합니다.' };
+        } else {
+            result = { isValid: true, message: '✓ 올바른 이름입니다.' };
+        }
+
+        this.updateFieldState('name', result);
+        this.showFieldMessage('name-message', result);
+    }
+
+    /**
+     * 휴대폰 번호 실시간 검증
+     */
+    validatePhoneField() {
+        const phoneResult = this.validatePhoneNumber();
+
+        this.updateFieldState('phone', phoneResult);
+        this.showFieldMessage('phone-message', phoneResult);
+    }
+
+    /**
+     * 약관 동의 실시간 검증
+     */
+    validateTermsField() {
+        const termsAgree = document.getElementById('termsAgree').checked;
+        const result = {
+            isValid: termsAgree,
+            message: termsAgree ? '✓ 약관에 동의하셨습니다.' : '이용약관 및 개인정보처리방침에 동의해주세요.'
+        };
+
+        this.updateFieldState('terms', result);
+        this.showTermsMessage(result);
+    }
+
+
+    /**
+     * 비밀번호 확인 필드 실시간 검증
+     */
+    validatePasswordConfirmField() {
+        const password = document.getElementById('password-input').value;
+        const passwordConfirm = document.getElementById('buyer-password-confirm').value;
+        let result = { isValid: true, message: '' };
+
+        if (!passwordConfirm) {
+            result = { isValid: false, message: '비밀번호 확인을 입력해주세요.' };
+        } else if (password !== passwordConfirm) {
+            result = { isValid: false, message: '비밀번호가 일치하지 않습니다.' };
+        } else {
+            result = { isValid: true, message: '✓ 비밀번호가 일치합니다.' };
+        }
+
+        this.updateFieldState('passwordConfirm', result);
+        this.showFieldMessage('re-password-message', result);
+    }
+    /**
+       * 체크박스나 셀렉트 변경 시 검증
+       */
+    handleChangeEvent(e) {
+        const fieldId = e.target.id;
+
+        if (fieldId === 'termsAgree') {
+            this.validateTermsField();
+        }
+
+        this.logFieldStates();
+    }
+
+
+    // 패스워드 상세 체크 -- 전필드를 상시체크하고 플래그 값을 받아서 서브밋때 안된건 리젝 포스트전송도 
     passwordInputChange() {
-        const passwordInput = document.getElementById('password-input'); // # 제거
-        const messageDiv = document.getElementById('password-message');   // # 제거
-        const messageText = messageDiv.querySelector('.message-text');   // span 요소 가져오기
+
+        const passwordInput = document.getElementById('password-input');
+        const messageDiv = document.getElementById('password-message');
+        console.log(`passwordInputChange in!!!! ,: ${passwordInput.id}`);
+        if (!passwordInput) {
+            console.error('❌ password-input 요소를 찾을 수 없습니다');
+            return;
+        }
+
+        if (!messageDiv) {
+            console.error('❌ password-message 요소를 찾을 수 없습니다');
+            return;
+        }
+
+        console.log('✅ DOM 요소들이 정상적으로 발견됨');
+        console.log('messageDiv 현재 클래스:', messageDiv.className);
+        console.log('messageDiv 현재 스타일:', messageDiv.style.cssText);
 
 
-        // 빈 값이면 메시지 숨기기
+        const messageText = messageDiv.querySelector('.message-text');
 
         const password = passwordInput.value;
 
@@ -45,236 +240,71 @@ class RegisterPage {
             return;
         }
 
-
-
-        // 유효성 검사 실행
         const result = this.validatePassword(password);
 
-        messageText.textContent = result.message;
-
-        // ✅ 클래스로 표시/숨김 처리
-        messageDiv.classList.remove('hidden');
-        messageDiv.classList.add('visible');
-        messageDiv.style.color = result.isValid ? 'green' : 'red';
-        console.log('비밀번호 검증:', result);
+        this.updateFieldState('passwordConfirm', result);
+        this.showFieldMessage(passwordInput.id,messageDiv.id, result);
     }
 
-    validatePassword(password) {
-        const checks = {
-            length: password.length >= 8,
-            lowercase: /[a-z]/.test(password),
-            number: /\d/.test(password),
-            noSpaces: !/\s/.test(password)
-        };
-
-        // 필요한 조건들
-        const needed = [];
-
-        if (!checks.length) {
-            needed.push(`${8 - password.length}자 더 필요`);
-        }
-        if (!checks.lowercase) {
-            needed.push('영소문자');
-        }
-        if (!checks.number) {
-            needed.push('숫자');
-        }
-        if (!checks.noSpaces) {
-            needed.push('공백 제거');
-        }
-
-        // 모든 조건 만족 여부
-        const isValid = needed.length === 0;
-
-        // 메시지 생성
-        let message;
-        if (isValid) {
-            message = '✓ 안전한 비밀번호입니다!';
-        } else {
-            message = `${needed.join(', ')} 필요`;
-        }
-
-        return {
-            isValid: isValid,
-            message: message,
-            needed: needed
+    /**
+  * 필드 상태 업데이트
+  */
+    updateFieldState(fieldName, result) {
+        this.fieldsState[fieldName] = {
+            isValid: result.isValid,
+            message: result.message,
+            lastChecked: new Date()
         };
     }
     /**
-         * ⌨️ 인풋 input 이벤트 처리 (실시간 입력 중)
+        * 모든 필드 상태 로깅
+        */
+    /**=
+  * @returns {{[key in FieldName]: '✅'|'❌'}}
+  */
+    logFieldStates() {
+        console.log('📊 실시간 필드 상태:', {
+            username: this.fieldsState.username.isValid ? '✅' : '❌',
+            password: this.fieldsState.password.isValid ? '✅' : '❌',
+            passwordConfirm: this.fieldsState.passwordConfirm.isValid ? '✅' : '❌',
+            name: this.fieldsState.name.isValid ? '✅' : '❌',
+            phone: this.fieldsState.phone.isValid ? '✅' : '❌',
+            terms: this.fieldsState.terms.isValid ? '✅' : '❌'
+        });
+    }
+    /**
+         * 서브밋 시 전체 검증
          */
-    handleInputChange(event) {
-        const target = event.target;
+    async handleFormSubmit(e) {
+        console.log('📋 폼 서브밋 시도 - 전체 필드 상태 체크');
 
-        if (!target.matches('.form-input')) {
-            return;
+        // 모든 필드 최종 검증
+        const isAllValid = this.checkAllFieldsValid();
+
+        if (!isAllValid) {
+            e.preventDefault(); // 폼 서브밋 차단
+
+            console.error('❌ 서브밋 실패: 유효하지 않은 필드가 있습니다');
+            console.error('필드별 상태:', this.fieldsState);
+
+            // 첫 번째 유효하지 않은 필드로 포커스 이동
+            this.focusFirstInvalidField();
+
+            alert('입력 정보를 다시 확인해주세요.');
+            return false;
         }
 
-        const fieldId = target.id;
-        const fieldValue = target.value; // trim 제거 (실시간에서는 원본값 사용)
-
-        // ⭐ 비밀번호는 실시간으로 유효성 검사
-        if (fieldId === 'password') {
-            this.validatePasswordRealtime(fieldValue);
-        }
-
-        // 비밀번호 확인은 실시간으로 체크
-        else if (fieldId === 'passwordConfirm') {
-            const password = document.querySelector('#password').value;
-
-            if (fieldValue && password !== fieldValue) {
-                this.showFieldError(fieldId, '비밀번호가 일치하지 않습니다.');
-            } else if (fieldValue && password === fieldValue) {
-                this.showFieldSuccess(fieldId, '✓ 비밀번호가 일치합니다.');
-            } else {
-                this.clearFieldError(fieldId);
-            }
-        }
-
-        // 다른 필드들은 입력 중에 오류 메시지만 제거
-        else {
-            this.clearFieldError(fieldId);
-        }
+        console.log('✅ 모든 필드 검증 통과 - 서브밋 허용');
+        console.log('검증된 필드 상태:', this.fieldsState);
+        return true;
     }
 
     /**
-     * 🔐 비밀번호 실시간 검증
+     * 모든 필드 유효성 확인
      */
-    validatePasswordRealtime(password) {
-        const fieldId = 'password';
-
-        // 빈 값이면 메시지 제거
-        if (!password) {
-            this.clearFieldError(fieldId);
-            return;
-        }
-
-        const checks = {
-            length: password.length >= 8,
-            lowercase: /[a-z]/.test(password),
-            number: /\d/.test(password),
-            noSpaces: !/\s/.test(password)
-        };
-
-        // ⭐ 실시간 검증: 진행 상황을 보여주는 방식
-        const progress = this.getPasswordProgress(checks, password.length);
-
-        if (progress.isComplete) {
-            this.showFieldSuccess(fieldId, '✓ 안전한 비밀번호입니다.');
-        } else {
-            // 실시간에서는 부드럽게 안내
-            this.showFieldInfo(fieldId, progress.message);
-        }
-
-        console.log(`🔐 실시간 비밀번호 검증: ${progress.message}`);
-    }
-
-
-    /**
-       * ✅ 필드별 유효성 검사
-       */
-    //   async validateField(fieldId, value) {
-    //     const rules = this.validationRules[fieldId];
-    //     if (!rules) return true;
-
-    //     console.log(`🔍 유효성 검사 시작: ${fieldId}`);
-
-    //     // 1. 필수 입력 확인
-    //     if (rules.required && !value) {
-    //         this.showFieldError(fieldId, `${this.getFieldName(fieldId)}을(를) 입력해주세요.`);
-    //         return false;
-    //     }
-
-    //     // 값이 없으면 추가 검사 skip
-    //     if (!value) return true;
-
-    //     // 2. ⭐ 비밀번호 특별 검증 (더 상세한 메시지)
-    //     if (fieldId === 'password') {
-    //         const passwordValidation = this.validatePasswordss(value);
-    //         if (!passwordValidation.isValid) {
-    //             this.showFieldError(fieldId, passwordValidation.message);
-    //             return false;
-    //         }
-    //     }
-
-    //     // 3. 길이 검사
-    //     if (rules.minLength && value.length < rules.minLength) {
-    //         this.showFieldError(fieldId, `${this.getFieldName(fieldId)}는 ${rules.minLength}자 이상이어야 합니다.`);
-    //         return false;
-    //     }
-
-    //     if (rules.maxLength && value.length > rules.maxLength) {
-    //         this.showFieldError(fieldId, `${this.getFieldName(fieldId)}는 ${rules.maxLength}자 이하여야 합니다.`);
-    //         return false;
-    //     }
-
-    //     // 4. 패턴 검사 (비밀번호는 위에서 이미 처리)
-    //     if (rules.pattern && fieldId !== 'password' && !rules.pattern.test(value)) {
-    //         this.showFieldError(fieldId, rules.message);
-    //         return false;
-    //     }
-
-    //     // 5. 필드 매치 검사 (비밀번호 확인)
-    //     if (rules.matchField) {
-    //         const matchValue = document.querySelector(`#${rules.matchField}`).value;
-    //         if (value !== matchValue) {
-    //             this.showFieldError(fieldId, rules.message);
-    //             return false;
-    //         }
-    //     }
-
-    //     // 6. ⭐ 특별 검사: 아이디 중복확인 (자동 실행)
-    //     if (fieldId === 'username' && value.length >= 3) {
-    //         const result = await this.autoCheckUsername(value);
-    //         if (!result.success) {
-    //             this.showFieldError(fieldId, result.message);
-    //             return false;
-    //         }
-    //     }
-
-    //     // 7. 모든 검사 통과 시 성공 표시
-    //     this.showFieldSuccess(fieldId, '✓ 올바른 형식입니다.');
-    //     return true;
-    // }
-
-    /**
-         * 🔐 비밀번호 상세 검증
-         */
-    validatePassword(password) {
-        const checks = {
-            length: password.length >= 8,
-            lowercase: /[a-z]/.test(password),
-            number: /\d/.test(password),
-            noSpaces: !/\s/.test(password)  // ⭐ 공백 체크
-        };
-
-        // 실패한 조건들 체크
-        const failedChecks = [];
-
-        if (!checks.length) {
-            failedChecks.push('8자 이상');
-        }
-        if (!checks.lowercase) {
-            failedChecks.push('영소문자 포함');
-        }
-        if (!checks.number) {
-            failedChecks.push('숫자 포함');
-        }
-        if (!checks.noSpaces) {
-            failedChecks.push('공백 제외');
-        }
-
-        if (failedChecks.length > 0) {
-            return {
-                isValid: false,
-                message: `비밀번호는 ${failedChecks.join(', ')}이 필요합니다.`
-            };
-        }
-
-        return {
-            isValid: true,
-            message: '안전한 비밀번호입니다.'
-        };
+    checkAllFieldsValid() {
+        const fields = Object.keys(this.fieldsState);
+        return fields.every(field => this.fieldsState[field].isValid);
     }
 
 
@@ -296,26 +326,411 @@ class RegisterPage {
                 dataset: target.dataset
             });
 
-        // 1. 탭 버튼 클릭 처리
         if (target.classList.contains('tab-btn')) {
             event.preventDefault();
             this.handleTabClick(target);
         }
 
-        // 2. 가입 버튼 클릭 처리
-        if (target.classList.contains('signup-btn')) {
-            event.preventDefault(); // form submit 방지
-            this.validateAndSubmitForm();
-            return;
-        }
-
-        // 3. 중복확인
         if (target.classList.contains('verify-btn')) {
-            event.preventDefault(); // form submit 방지
+            event.preventDefault();
             await this.handleIdCheck(); // 중복확인
             return;
         }
 
+        if (target.classList.contains('signup-btn')) {
+            event.preventDefault();
+            await this.validateAllFields();
+            return;
+        }
+    }
+
+
+    /**
+     * 📋 모든 필드 유효성 검사
+     */
+    async validateAllFields() {
+        console.log('📋 전체 필드 유효성 검사 시작');
+
+        let isValid = true;
+        const errors = [];
+
+        // 1. 아이디 검증
+        const username = document.getElementById('username').value.trim();
+        if (!username) {
+            this.showFieldError('buyer-id-message', '아이디를 입력해주세요.');
+            isValid = false;
+        } else if (username.length < 3 || username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username)) {
+            this.showFieldError('buyer-id-message', 'ID는 3~20자의 영어, 숫자만 가능합니다.');
+            isValid = false;
+        } else {
+            // 아이디 중복확인 (필수)
+            const duplicateCheck = await this.checkUsernameDuplicate(username);
+            if (!duplicateCheck.success) {
+                this.showFieldError('buyer-id-message', duplicateCheck.message);
+                isValid = false;
+            }
+        }
+
+        // 2. 비밀번호 검증
+        const password = document.getElementById('password-input').value;
+        const passwordValidation = this.validatePassword(password);
+        if (!passwordValidation.isValid) {
+            this.showFieldError('password-message', passwordValidation.message);
+            isValid = false;
+        }
+
+        // 3. 비밀번호 확인 검증
+        const passwordConfirm = document.getElementById('buyer-password-confirm').value;
+        if (!passwordConfirm) {
+            this.showFieldError('re-password-message', '비밀번호 확인을 입력해주세요.');
+            isValid = false;
+        } else if (password !== passwordConfirm) {
+            this.showFieldError('re-password-message', '비밀번호가 일치하지 않습니다.');
+            isValid = false;
+        }
+
+        // 4. 이름 검증
+        const name = document.getElementById('buyer-name').value.trim();
+        if (!name) {
+            this.showFieldError('name-message', '이름을 입력해주세요.');
+            isValid = false;
+        }
+
+        // 5. 휴대폰 번호 검증
+        const phoneResult = this.validatePhoneNumber();
+        if (!phoneResult.isValid) {
+            this.showFieldError('phone-message', phoneResult.message);
+            isValid = false;
+        }
+
+        // 6. 약관 동의 검증
+        const termsAgree = document.getElementById('termsAgree').checked;
+        if (!termsAgree) {
+            this.showTermsError('이용약관 및 개인정보처리방침에 동의해주세요.');
+            isValid = false;
+        }
+
+        console.log(`📋 전체 검증 결과: ${isValid ? '✅ 통과' : '❌ 실패'}`);
+        return isValid;
+    }
+
+    /**
+     * 🔐 비밀번호 검증
+     */
+    validatePassword(password) {
+        if (!password) {
+            return {
+                isValid: false,
+                message: '비밀번호를 입력해주세요.'
+            };
+        }
+
+        const checks = {
+            length: password.length >= 8,
+            lowercase: /[a-z]/.test(password),
+            number: /\d/.test(password),
+            noSpaces: !/\s/.test(password)
+        };
+
+        const needed = [];
+
+        if (!checks.length) {
+            needed.push('8자 이상');
+        }
+        if (!checks.lowercase) {
+            needed.push('영소문자');
+        }
+        if (!checks.number) {
+            needed.push('숫자');
+        }
+        if (!checks.noSpaces) {
+            needed.push('공백 제거');
+        }
+
+        // return {
+        //     isValid: needed.length === 0,
+        //     message: needed.length === 0 ? 
+        //         '✓ 안전한 비밀번호입니다!' : 
+        //         `${needed.join(', ')} 필요`
+        // };
+
+        return {
+            isValid: needed.length === 0,
+            message: needed.length === 0 ?
+                '✓ 안전한 비밀번호입니다!' :
+                `${needed.join(', ')} 필요`,
+            validationFlag: needed.length === 0 ? 'VALID' : 'INVALID' // 추가된 플래그
+        };
+    }
+
+    /**
+     * 📱 휴대폰 번호 검증
+     */
+    validatePhoneNumber() {
+        const phoneSelect = document.querySelector('.phone-select').value;
+        const phoneInput = document.querySelector('.phone-input').value.trim();
+
+        if (!phoneInput) {
+            return {
+                isValid: false,
+                message: '휴대폰 번호를 입력해주세요.'
+            };
+        }
+
+        // 010으로 시작하는 10~11자리 숫자 체크
+        const fullPhoneNumber = phoneSelect + phoneInput;
+
+        if (!/^010\d{8}$/.test(fullPhoneNumber) && !/^010\d{7}$/.test(fullPhoneNumber)) {
+            return {
+                isValid: false,
+                message: '010으로 시작하는 10~11자리 숫자를 입력해주세요.'
+            };
+        }
+
+        return {
+            isValid: true,
+            phoneNumber: fullPhoneNumber
+        };
+    }
+
+    /**
+     * 🔍 아이디 중복확인
+     */
+    async checkUsernameDuplicate(username) {
+        try {
+            console.log('🔍 아이디 중복확인:', username);
+
+            const response = await fetch(`${this.apiBaseUrl}/accounts/validate-username/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: username })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                if (data.message) {
+                    return {
+                        success: true,
+                        message: '✓ 사용 가능한 아이디입니다.'
+                    };
+                } else if (data.error) {
+                    return {
+                        success: false,
+                        message: data.error
+                    };
+                }
+            } else {
+                return {
+                    success: false,
+                    message: '아이디 확인 중 오류가 발생했습니다.'
+                };
+            }
+
+        } catch (error) {
+            console.error('❌ 아이디 중복확인 오류:', error);
+            return {
+                success: false,
+                message: '네트워크 오류가 발생했습니다.'
+            };
+        }
+    }
+
+    /**
+     * 📤 회원가입 API 요청
+     */
+    async submitSignup() {
+        console.log('📤 회원가입 API 요청 시작');
+
+
+        // 패스워드가 유효하지 않으면 서브밋 차단
+        if (!this.passwordState.isValid) {
+            e.preventDefault(); // 폼 서브밋 차단
+
+            // 유효하지 않은 경우 로그 및 알림
+            console.error('❌ 서브밋 실패: 패스워드가 유효하지 않습니다');
+            console.error('패스워드 상태:', {
+                isValid: this.passwordState.isValid,
+                message: this.passwordState.message,
+                lastChecked: this.passwordState.lastChecked
+            });
+
+            // 사용자에게 알림
+            alert('패스워드가 유효하지 않습니다. 패스워드 요구사항을 확인해주세요.');
+
+            // 패스워드 입력 필드에 포커스
+            const passwordInput = document.getElementById('password-input');
+            if (passwordInput) {
+                passwordInput.focus();
+            }
+
+            return false;
+        }
+
+        // 폼 데이터 수집
+        // const formData = this.collectFormData();
+
+        // try {
+        //     // 로딩 상태 표시
+        //     this.setSubmitButtonLoading(true);
+
+        //     const endpoint = this.currentTab === 'buyer' 
+        //         ? `${this.apiBaseUrl}/accounts/buyer/signup/`
+        //         : `${this.apiBaseUrl}/accounts/seller/signup/`;
+
+        //     console.log('📡 API 요청:', endpoint, formData);
+
+        //     const response = await fetch(endpoint, {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify(formData)
+        //     });
+
+        //     console.log('📡 응답 상태:', response.status);
+
+        //     if (response.ok) {
+        //         const data = await response.json();
+        //         console.log('✅ 회원가입 성공:', data);
+
+        //         // 성공 메시지
+        //         this.showSuccessMessage('회원가입이 완료되었습니다!');
+
+        //         // 2초 후 로그인 페이지로 이동
+        //         setTimeout(() => {
+        //             window.router.navigateTo('/login');
+        //         }, 2000);
+
+        //     } else {
+        //         const errorData = await response.json();
+        //         console.error('❌ 회원가입 실패:', errorData);
+
+        //         // 서버 에러 처리
+        //         this.handleApiErrors(errorData);
+        //     }
+
+        // } catch (error) {
+        //     console.error('❌ 회원가입 API 오류:', error);
+        //     this.showErrorMessage('네트워크 오류가 발생했습니다.');
+
+        // } finally {
+        //     this.setSubmitButtonLoading(false);
+        // }
+    }
+
+    /**
+     * 📊 폼 데이터 수집
+     */
+    collectFormData() {
+        const phoneResult = this.validatePhoneNumber();
+
+        return {
+            username: document.getElementById('username').value.trim(),
+            password: document.getElementById('password-input').value,
+            name: document.getElementById('buyer-name').value.trim(),
+            phone_number: phoneResult.phoneNumber,
+            user_type: this.currentTab.toUpperCase() // BUYER 또는 SELLER
+        };
+    }
+
+    /**
+     * 🚨 API 에러 처리
+     */
+    handleApiErrors(errorData) {
+        console.log('🚨 API 에러 처리:', errorData);
+
+        // 필드별 에러 메시지 표시
+        if (errorData.username) {
+            this.showFieldError('buyer-id-message', errorData.username[0]);
+        }
+        if (errorData.password) {
+            this.showFieldError('password-message', errorData.password[0]);
+        }
+        if (errorData.name) {
+            this.showNameError('re-password-message', errorData.name[0]);
+        }
+        if (errorData.phone_number) {
+            this.showPhoneError('phone-message', errorData.phone_number[0]);
+        }
+
+        // 일반 에러 메시지
+        if (errorData.detail) {
+            this.showErrorMessage('terms-message', errorData.detail);
+        } else if (errorData.non_field_errors) {
+            this.showErrorMessage('terms-message', errorData.non_field_errors[0]);
+        } else {
+            this.showErrorMessage('terms-message', '회원가입 중 오류가 발생했습니다.');
+        }
+    }
+
+    /**
+     * 💡 메시지 표시 함수들
+     */
+    showFieldError(messageId, message) {
+        const messageContainer = document.getElementById(messageId);
+        const messageText = messageContainer.querySelector('.message-text');
+
+        messageText.textContent = message;
+        messageContainer.classList.remove('hidden');
+        messageContainer.classList.add('visible');
+        messageContainer.style.color = 'red';
+
+        console.log(`❌ ${messageId}: ${message}`);
+    }
+
+    // showNameError(message) {
+    //     // 이름 필드에 에러 메시지 표시 (DOM에 메시지 요소 추가 필요)
+    //     console.log(`❌ 이름 오류: ${message}`);
+    //     alert(`이름 오류: ${message}`); // 임시로 alert 사용
+    // }
+
+    // showPhoneError(message) {
+    //     // 휴대폰 필드에 에러 메시지 표시 (DOM에 메시지 요소 추가 필요)
+    //     console.log(`❌ 휴대폰 오류: ${message}`);
+    //     alert(`휴대폰 오류: ${message}`); // 임시로 alert 사용
+    // }
+
+    showTermsError(message) {
+        const warningElement = document.getElementById('termsAgreeWarning');
+        if (warningElement) {
+            warningElement.textContent = message;
+            warningElement.style.color = 'red';
+            warningElement.style.display = 'block';
+        }
+        console.log(`❌ 약관 오류: ${message}`);
+    }
+
+    /**
+     * ⏳ 제출 버튼 로딩 상태
+     */
+    setSubmitButtonLoading(isLoading) {
+        const submitBtn = document.querySelector('.signup-btn');
+
+        if (isLoading) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '가입 중...';
+            submitBtn.style.opacity = '0.7';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '가입하기';
+            submitBtn.style.opacity = '1';
+        }
+    }
+
+    /**
+     * 🎉 성공/에러 메시지
+     */
+    showSuccessMessage(message) {
+        alert(`✅ ${message}`); // 실제로는 토스트 메시지로 교체
+        console.log(`✅ ${message}`);
+    }
+
+    showErrorMessage(message) {
+        alert(`❌ ${message}`); // 실제로는 토스트 메시지로 교체
+        console.log(`❌ ${message}`);
     }
 
 
@@ -390,17 +805,6 @@ class RegisterPage {
         }
     }
 
-    //     // 메시지 표시 함수
-    //     showMessage(element, text, type = 'info') {
-    //     const messageEl = document.getElementById('buyer-id-message');
-
-    //     element.textContent = text;
-    //     element.className = `message ${type} visible`;
-    //     element.style.display = 'block';
-
-    //     // 부드러운 애니메이션
-    //     element.style.opacity = '1';
-    // }
 
     showMessage(text, type = 'info') {
         const messageContainer = document.getElementById('buyer-id-message');
@@ -432,162 +836,164 @@ class RegisterPage {
     }
 
 
-    validateAndSubmitForm() {
-        const buyerSignupForm = document.getElementById('buyerSignupForm');
-        const sellerSignupForm = document.getElementById('sellerSignupForm');
+    // validateAndSubmitForm() {
+    //     const buyerSignupForm = document.getElementById('buyerSignupForm');
+    //     const sellerSignupForm = document.getElementById('sellerSignupForm');
 
-        // 구매자 폼 요소
-        const buyerInputs = {
-            username: document.getElementById('userId'),
-            password: document.getElementById('password'),
-            passwordConfirm: document.getElementById('passwordConfirm'),
-            name: document.getElementById('name'),
-            phonePrefix: document.getElementById('phonePrefix'),
-            phoneMiddle: document.getElementById('phoneMiddle'),
-            phoneLast: document.getElementById('phoneLast'),
-            termsAgree: document.getElementById('termsAgree')
-        };
-        const buyerWarnings = {
-            username: document.getElementById('userIdWarning'),
-            password: document.getElementById('passwordWarning'),
-            passwordConfirm: document.getElementById('passwordConfirmWarning'),
-            name: document.getElementById('nameWarning'),
-            phoneNumber: document.getElementById('phoneNumberWarning'),
-            termsAgree: document.getElementById('termsAgreeWarning')
-        };
-        const buyerSuccess = {
-            username: document.getElementById('userIdSuccess')
-        };
-        const checkUserIdBtn = document.getElementById('checkUserId');
+    //     // 구매자 폼 요소
+    //     const buyerInputs = {
+    //         username: document.getElementById('userId'),
+    //         password: document.getElementById('password'),
+    //         passwordConfirm: document.getElementById('passwordConfirm'),
+    //         name: document.getElementById('name'),
+    //         phonePrefix: document.getElementById('phonePrefix'),
+    //         phoneMiddle: document.getElementById('phoneMiddle'),
+    //         phoneLast: document.getElementById('phoneLast'),
+    //         termsAgree: document.getElementById('termsAgree')
+    //     };
+    //     const buyerWarnings = {
+    //         username: document.getElementById('userIdWarning'),
+    //         password: document.getElementById('passwordWarning'),
+    //         passwordConfirm: document.getElementById('passwordConfirmWarning'),
+    //         name: document.getElementById('nameWarning'),
+    //         phoneNumber: document.getElementById('phoneNumberWarning'),
+    //         termsAgree: document.getElementById('termsAgreeWarning')
+    //     };
+    //     const buyerSuccess = {
+    //         username: document.getElementById('userIdSuccess')
+    //     };
+    //     const checkUserIdBtn = document.getElementById('checkUserId');
 
-        // 판매자 폼 요소 (판매자 폼이 활성화될 때 가져와야 함)
-        let sellerInputs = {};
-        let sellerWarnings = {};
-        let sellerSuccess = {};
-        let checkSellerUserIdBtn = null;
+    //     // 판매자 폼 요소 (판매자 폼이 활성화될 때 가져와야 함)
+    //     let sellerInputs = {};
+    //     let sellerWarnings = {};
+    //     let sellerSuccess = {};
+    //     let checkSellerUserIdBtn = null;
 
-        let currentActiveForm = 'buyer'; // 현재 활성화된 폼 추적
+    //     let currentActiveForm = 'buyer'; // 현재 활성화된 폼 추적
 
-        const baseUrl = 'https://api.wenivops.co.kr';
-        const buyerSignupEndpoint = `${baseUrl}/accounts/buyer/signup/`;
-        const sellerSignupEndpoint = `${baseUrl}/accounts/seller/signup/`; // 판매자 회원가입 엔드포인트 (가정)
-        const checkIdEndpoint = `${baseUrl}/accounts/check-id/`; // ID 중복확인 엔드포인트 (가정)
-
-
+    //     const baseUrl = 'https://api.wenivops.co.kr';
+    //     const buyerSignupEndpoint = `${baseUrl}/accounts/buyer/signup/`;
+    //     const sellerSignupEndpoint = `${baseUrl}/accounts/seller/signup/`; // 판매자 회원가입 엔드포인트 (가정)
+    //     const checkIdEndpoint = `${baseUrl}/accounts/check-id/`; // ID 중복확인 엔드포인트 (가정)
 
 
 
-        // --- 구매자 폼 제출 로직 ---
-        buyerSignupForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            this.clearWarnings(buyerWarnings); // 구매자 폼 경고만 초기화
-            this.clearSuccessMessages(buyerSuccess); // 구매자 폼 성공 메시지 초기화
 
-            const username = buyerInputs.username.value.trim();
-            const password = buyerInputs.password.value.trim();
-            const passwordConfirm = buyerInputs.passwordConfirm.value.trim();
-            const name = buyerInputs.name.value.trim();
-            const phoneNumber = buyerInputs.phonePrefix.value + buyerInputs.phoneMiddle.value.trim() + buyerInputs.phoneLast.value.trim();
-            const termsAgreed = buyerInputs.termsAgree.checked;
 
-            let isValid = true;
+    //     // --- 구매자 폼 제출 로직 ---
+    //     buyerSignupForm.addEventListener('submit', async (event) => {
+    //         event.preventDefault();
+    //         this.clearWarnings(buyerWarnings); // 구매자 폼 경고만 초기화
+    //         this.clearSuccessMessages(buyerSuccess); // 구매자 폼 성공 메시지 초기화
 
-            // 1. 모든 필드는 필수로 작성해야 합니다.
-            if (!username) { buyerWarnings.username.textContent = '아이디를 입력해주세요.'; isValid = false; }
-            if (!password) { buyerWarnings.password.textContent = '비밀번호를 입력해주세요.'; isValid = false; }
-            if (!passwordConfirm) { buyerWarnings.passwordConfirm.textContent = '비밀번호 재확인을 입력해주세요.'; isValid = false; }
-            if (!name) { buyerWarnings.name.textContent = '이름을 입력해주세요.'; isValid = false; }
-            if (!phoneNumber.length === 0) { buyerWarnings.phoneNumber.textContent = '휴대폰 번호를 입력해주세요.'; isValid = false; }
-            if (!termsAgreed) { buyerWarnings.termsAgree.textContent = '이용약관 및 개인정보처리방침에 동의해야 합니다.'; isValid = false; }
+    //         const username = buyerInputs.username.value.trim();
+    //         const password = buyerInputs.password.value.trim();
+    //         const passwordConfirm = buyerInputs.passwordConfirm.value.trim();
+    //         const name = buyerInputs.name.value.trim();
+    //         const phoneNumber = buyerInputs.phonePrefix.value + buyerInputs.phoneMiddle.value.trim() + buyerInputs.phoneLast.value.trim();
+    //         const termsAgreed = buyerInputs.termsAgree.checked;
 
-            // 2. 비밀번호 재확인 일치
-            if (password && passwordConfirm && password !== passwordConfirm) {
-                buyerWarnings.passwordConfirm.textContent = '비밀번호가 일치하지 않습니다.';
-                isValid = false;
-            }
+    //         let isValid = true;
 
-            // 3. 비밀번호 유효성 (8자 이상, 영소문자, 숫자 포함)
-            if (password) {
-                if (password.length < 8) {
-                    buyerWarnings.password.textContent = '비밀번호는 8자 이상이어야 합니다.';
-                    isValid = false;
-                } else if (!/[a-z]/.test(password)) {
-                    buyerWarnings.password.textContent = '비밀번호는 한 개 이상의 영소문자를 포함해야 합니다.';
-                    isValid = false;
-                } else if (!/[0-9]/.test(password)) {
-                    buyerWarnings.password.textContent = '비밀번호는 한 개 이상의 숫자를 포함해야 합니다.';
-                    isValid = false;
-                }
-            }
+    //         // 1. 모든 필드는 필수로 작성해야 합니다.
+    //         if (!username) { buyerWarnings.username.textContent = '아이디를 입력해주세요.'; isValid = false; }
+    //         if (!password) { buyerWarnings.password.textContent = '비밀번호를 입력해주세요.'; isValid = false; }
+    //         if (!passwordConfirm) { buyerWarnings.passwordConfirm.textContent = '비밀번호 재확인을 입력해주세요.'; isValid = false; }
+    //         if (!name) { buyerWarnings.name.textContent = '이름을 입력해주세요.'; isValid = false; }
+    //         if (!phoneNumber.length === 0) { buyerWarnings.phoneNumber.textContent = '휴대폰 번호를 입력해주세요.'; isValid = false; }
+    //         if (!termsAgreed) { buyerWarnings.termsAgree.textContent = '이용약관 및 개인정보처리방침에 동의해야 합니다.'; isValid = false; }
 
-            // 4. 아이디 유효성 (20자 이내, 영문/숫자만)
-            if (username && (username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username))) {
-                buyerWarnings.username.textContent = 'ID는 20자 이내의 영어 소문자, 대문자, 숫자만 가능합니다.';
-                isValid = false;
-            }
+    //         // 2. 비밀번호 재확인 일치
+    //         if (password && passwordConfirm && password !== passwordConfirm) {
+    //             buyerWarnings.passwordConfirm.textContent = '비밀번호가 일치하지 않습니다.';
+    //             isValid = false;
+    //         }
 
-            // 5. 휴대폰 번호 유효성 (010으로 시작하는 10~11자리 숫자)
-            if (phoneNumber && !/^010[0-9]{7,8}$/.test(phoneNumber)) {
-                buyerWarnings.phoneNumber.textContent = '핸드폰번호는 010으로 시작하는 10~11자리 숫자여야 합니다.';
-                isValid = false;
-            }
+    //         // 3. 비밀번호 유효성 (8자 이상, 영소문자, 숫자 포함)
+    //         if (password) {
+    //             if (password.length < 8) {
+    //                 buyerWarnings.password.textContent = '비밀번호는 8자 이상이어야 합니다.';
+    //                 isValid = false;
+    //             } else if (!/[a-z]/.test(password)) {
+    //                 buyerWarnings.password.textContent = '비밀번호는 한 개 이상의 영소문자를 포함해야 합니다.';
+    //                 isValid = false;
+    //             } else if (!/[0-9]/.test(password)) {
+    //                 buyerWarnings.password.textContent = '비밀번호는 한 개 이상의 숫자를 포함해야 합니다.';
+    //                 isValid = false;
+    //             }
+    //         }
 
-            // 6. ID 중복확인 여부 (API 요청 전에 필수적으로 확인)
-            // if (!isBuyerIdChecked) {
-            //     buyerWarnings.username.textContent = '아이디 중복확인을 해주세요.';
-            //     isValid = false;
-            // }
+    //         // 4. 아이디 유효성 (20자 이내, 영문/숫자만)
+    //         if (username && (username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username))) {
+    //             buyerWarnings.username.textContent = 'ID는 20자 이내의 영어 소문자, 대문자, 숫자만 가능합니다.';
+    //             isValid = false;
+    //         }
 
-            if (!isValid) {
-                console.log('클라이언트 측 유효성 검사 실패');
-                return;
-            }
+    //         // 5. 휴대폰 번호 유효성 (010으로 시작하는 10~11자리 숫자)
+    //         if (phoneNumber && !/^010[0-9]{7,8}$/.test(phoneNumber)) {
+    //             buyerWarnings.phoneNumber.textContent = '핸드폰번호는 010으로 시작하는 10~11자리 숫자여야 합니다.';
+    //             isValid = false;
+    //         }
 
-            // --- API 요청 전 최종 데이터 확인 ---
-            console.log('구매자 회원가입 요청 데이터:', { username, password, name, phone_number: phoneNumber, user_type: "BUYER" });
+    //         // 6. ID 중복확인 여부 (API 요청 전에 필수적으로 확인)
+    //         // if (!isBuyerIdChecked) {
+    //         //     buyerWarnings.username.textContent = '아이디 중복확인을 해주세요.';
+    //         //     isValid = false;
+    //         // }
 
-            try {
-                const response = await fetch(buyerSignupEndpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password,
-                        name: name,
-                        phone_number: phoneNumber,
-                        user_type: "BUYER"
-                    })
-                });
+    //         if (!isValid) {
+    //             console.log('클라이언트 측 유효성 검사 실패');
+    //             return;
+    //         }
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('구매자 회원가입 API 응답 오류:', errorData);
+    //         // --- API 요청 전 최종 데이터 확인 ---
+    //         console.log('구매자 회원가입 요청 데이터:', { username, password, name, phone_number: phoneNumber, user_type: "BUYER" });
 
-                    this.displayApiErrors(errorData, buyerWarnings, buyerSuccess);
-                    return;
-                }
+    //         try {
+    //             const response = await fetch(buyerSignupEndpoint, {
+    //                 method: 'POST',
+    //                 headers: { 'Content-Type': 'application/json' },
+    //                 body: JSON.stringify({
+    //                     username: username,
+    //                     password: password,
+    //                     name: name,
+    //                     phone_number: phoneNumber,
+    //                     user_type: "BUYER"
+    //                 })
+    //             });
 
-                const successData = await response.json();
-                console.log('구매자 회원가입 성공:', successData);
-                this.showGlobalSuccessMessage('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.');
+    //             if (!response.ok) {
+    //                 const errorData = await response.json();
+    //                 console.error('구매자 회원가입 API 응답 오류:', errorData);
 
-                // 회원가입 성공 후 로그인 페이지로 이동 (라우터 사용 권장)
-                setTimeout(() => {
-                    if (this.router) {
-                        this.router.navigateTo('/login');
-                    } else {
-                        window.location.href = '/login';
-                    }
-                }, 2000);
+    //                 this.displayApiErrors(errorData, buyerWarnings, buyerSuccess);
+    //                 return;
+    //             }
 
-            } catch (error) {
-                console.error('구매자 회원가입 API 요청 중 치명적인 오류 발생:', error);
-                this.showGlobalErrorMessage('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-            }
-        });
-    }
+    //             const successData = await response.json();
+    //             console.log('구매자 회원가입 성공:', successData);
+    //             this.showGlobalSuccessMessage('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.');
+
+    //             // 회원가입 성공 후 로그인 페이지로 이동 (라우터 사용 권장)
+    //             setTimeout(() => {
+    //                 if (this.router) {
+    //                     this.router.navigateTo('/login');
+    //                 } else {
+    //                     window.location.href = '/login';
+    //                 }
+    //             }, 2000);
+
+    //         } catch (error) {
+    //             console.error('구매자 회원가입 API 요청 중 치명적인 오류 발생:', error);
+    //             this.showGlobalErrorMessage('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    //         }
+    //     });
+    // }
 
     // 특정 폼의 입력값과 메시지를 초기화하는 헬퍼
+
+
     resetForm(formElement) {
         formElement.reset(); // 폼의 모든 입력 필드 초기화
         this.clearAllWarningsAndSuccessMessages(); // 모든 메시지 초기화
