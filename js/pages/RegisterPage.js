@@ -43,7 +43,7 @@ class RegisterPage {
 
 
     /**
-   * 입력 필드 변경 시 실시간 검증
+   * 🔥살려 입력 필드 변경 시 실시간 검증
    */
     handleInputChangeAll(e) {
         const fieldId = e.target.id;        // 이벤트가 발생한 요소의 ID
@@ -79,7 +79,7 @@ class RegisterPage {
     }
 
     /**
-   * 아이디 필드 실시간 검증 (중복확인 제외)
+   *🔥살려 아이디 필드 실시간 검증 (중복확인 제외)
    */
     validateUsernameField() {
         const username = document.getElementById('username').value.trim();
@@ -100,7 +100,7 @@ class RegisterPage {
     }
 
     /**
-    * 필드 메시지 표시
+    * 🔥살려필드 메시지 표시
     */
     showFieldMessage(messageDivId, result) {
 
@@ -130,7 +130,7 @@ class RegisterPage {
 
 
     /**
-    * 이름 필드 실시간 검증
+    * 🔥살려 이름 필드 실시간 검증
     */
     validateNameField() {
         const name = document.getElementById('buyer-name').value.trim();
@@ -151,7 +151,7 @@ class RegisterPage {
     }
 
     /**
-     * 휴대폰 번호 실시간 검증
+     * 🔥살려 휴대폰 번호 실시간 검증
      */
     validatePhoneField() {
         const phoneResult = this.validatePhoneNumber();
@@ -163,20 +163,22 @@ class RegisterPage {
     /**
      * 약관 동의 실시간 검증
      */
+
+
     validateTermsField() {
         const termsAgree = document.getElementById('termsAgree').checked;
         const result = {
             isValid: termsAgree,
             message: termsAgree ? '✓ 약관에 동의하셨습니다.' : '이용약관 및 개인정보처리방침에 동의해주세요.'
         };
-
+        
         this.updateFieldState('terms', result);
-        this.showTermsMessage(result);
+        return result; 
     }
 
 
     /**
-     * 비밀번호 확인 필드 실시간 검증
+     * 🔥살려비밀번호 확인 필드 실시간 검증
      */
     validatePasswordConfirmField() {
         const password = document.getElementById('password-input').value;
@@ -195,7 +197,7 @@ class RegisterPage {
         this.showFieldMessage('re-password-message', result);
     }
     /**
-       * 체크박스나 셀렉트 변경 시 검증
+       * 체크박스 검증보류!!!~
        */
     handleChangeEvent(e) {
         const fieldId = e.target.id;
@@ -208,7 +210,7 @@ class RegisterPage {
     }
 
 
-    // 패스워드 상세 체크 -- 전필드를 상시체크하고 플래그 값을 받아서 서브밋때 안된건 리젝 포스트전송도 
+    //🔥살려 패스워드 상세 체크 -- 전필드를 상시체크하고 플래그 값을 받아서 서브밋때 안된건 리젝 포스트전송도 
     passwordInputChange() {
 
         const passwordInput = document.getElementById('password-input');
@@ -241,7 +243,7 @@ class RegisterPage {
 
         const result = this.validatePassword(password);
 
-        this.updateFieldState('passwordConfirm', result);
+        this.updateFieldState('password', result);
         this.showFieldMessage(messageDiv.id, result);
     }
 
@@ -271,6 +273,9 @@ class RegisterPage {
             terms: this.fieldsState.terms.isValid ? '✅' : '❌'
         });
     }
+
+
+
     /**
          * 서브밋 시 전체 검증
          */
@@ -316,6 +321,9 @@ class RegisterPage {
     }
 
 
+    /**
+    클릭
+     */
     async handlePageClick(event) {
         const target = event.target;
         console.log('🖱️ 클릭 이벤트 발생:',
@@ -338,17 +346,86 @@ class RegisterPage {
 
         if (target.classList.contains('signup-btn')) {
             event.preventDefault();
-            await this.validateAllFields();
+            await this.validateAllFields33();
             return;
         }
     }
 
 
+    async validateAllFields33() {
+
+        const termsResult = this.validateTermsField();
+
+        if (!termsResult.isValid) {
+            alert('❌ 이용약관 및 개인정보처리방침에 동의해주세요!');
+            return; 
+        }
+
+        if (this.checkAllValid()) {
+            console.log('✅ 모든 필드 검증 통과 - 회원가입 진행');
+        } else {
+            console.log('❌ 일부 필드가 유효하지 않음 - 회원가입 차단');
+        }
+    }
+
+    async checkAllValid() {
+        const allValid = Object.values(this.fieldsState).every(field => field.isValid);
+        console.log(`전체 필드 유효성: ${allValid ? '✅' : '❌'}`);
+        return allValid;
+    }
+    
+    /**
+     * 뉴비
+     */
+    async validateAllFields22() {
+        console.log('🔥 회원가입 버튼 클릭 - 전체 검증 시작');
+    
+        // 전체 필드 검증 실행 및 결과 확인
+        const isAllValid = await this.validateAllFields();
+        
+        console.log('📊 전체 검증 결과:', isAllValid);
+        console.log('📊 현재 필드 상태:', this.fieldsState);
+        
+        if (isAllValid) {
+            console.log('✅ 모든 필드 검증 통과 - 회원가입 진행');
+            // 실제 회원가입 처리
+            // await this.submitRegistration();
+        } else {
+            console.log('❌ 일부 필드가 유효하지 않음 - 회원가입 차단');
+            
+            // 유효하지 않은 필드들 찾기
+            const invalidFields = this.getInvalidFields();
+            console.log('유효하지 않은 필드들:', invalidFields);
+            
+            // 사용자에게 알림
+            alert(`다음 항목을 확인해주세요:\n${invalidFields.join(', ')}`);
+            
+            // 첫 번째 유효하지 않은 필드로 포커스 이동
+            // this.focusFirstInvalidField();
+        }
+    }
+
+    // ✅ 유효하지 않은 필드 목록 반환 헬퍼 함수
+getInvalidFields() {
+    const fieldNames = {
+        username: '아이디',
+        password: '비밀번호',
+        passwordConfirm: '비밀번호 확인',
+        name: '이름',
+        phone: '휴대폰',
+        terms: '약관동의'
+    };
+    
+    return Object.keys(this.fieldsState)
+        .filter(field => !this.fieldsState[field]?.isValid)
+        .map(field => fieldNames[field] || field);
+}
+
     /**
      * 📋 모든 필드 유효성 검사
      */
     async validateAllFields() {
-        console.log('📋 전체 필드 유효성 검사 시작');
+        console.log('📋 회원가입 버튼 클릭 - 전체 검증 시작');
 
         let isValid = true;
         const errors = [];
@@ -423,16 +500,16 @@ class RegisterPage {
                 message: '비밀번호를 입력해주세요.'
             };
         }
-
+    
         const checks = {
             length: password.length >= 8,
             lowercase: /[a-z]/.test(password),
             number: /\d/.test(password),
             noSpaces: !/\s/.test(password)
         };
-
+    
         const needed = [];
-
+    
         if (!checks.length) {
             needed.push('8자 이상');
         }
@@ -445,20 +522,13 @@ class RegisterPage {
         if (!checks.noSpaces) {
             needed.push('공백 제거');
         }
-
-        // return {
-        //     isValid: needed.length === 0,
-        //     message: needed.length === 0 ? 
-        //         '✓ 안전한 비밀번호입니다!' : 
-        //         `${needed.join(', ')} 필요`
-        // };
-
+    
+        // ✅ 올바른 반환값
         return {
             isValid: needed.length === 0,
-            message: needed.length === 0 ?
-                '✓ 안전한 비밀번호입니다!' :
-                `${needed.join(', ')} 필요`,
-            validationFlag: needed.length === 0 ? 'VALID' : 'INVALID' // 추가된 플래그
+            message: needed.length === 0 ? 
+                '✓ 안전한 비밀번호입니다!' : 
+                `${needed.join(', ')} 필요`
         };
     }
 
