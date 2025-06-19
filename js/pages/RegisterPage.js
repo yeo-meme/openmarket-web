@@ -103,11 +103,11 @@ class RegisterPage {
     /**
     * 필드 메시지 표시
     */
-    showFieldMessage(messageElementId,messageDivId, result) {
+    showFieldMessage(messageDivId, result) {
 
         const messageDiv = document.getElementById(messageDivId);
-        console.log(`show in : ${messageElementId},messageDiv:${messageDiv.id} `);
-        console.log(`show in : ${messageElementId},messageDiv:${messageDiv} `);
+        console.log(`messageDiv:${messageDiv.id} `);
+        console.log(`messageDiv:${messageDiv} `);
 
         // const messageDiv = document.getElementById(messageElementId);
         if (!messageDiv) {
@@ -123,7 +123,7 @@ class RegisterPage {
         }
         messageText.textContent = result.message;
 
-            console.error(`re eeeee ${result.message}`);
+        console.error(`re eeeee ${result.message}`);
         messageDiv.classList.remove('hidden');
         messageDiv.classList.add('visible');
         messageDiv.style.color = result.isValid ? 'green' : 'red';
@@ -243,7 +243,7 @@ class RegisterPage {
         const result = this.validatePassword(password);
 
         this.updateFieldState('passwordConfirm', result);
-        this.showFieldMessage(passwordInput.id,messageDiv.id, result);
+        this.showFieldMessage(messageDiv.id, result);
     }
 
     /**
