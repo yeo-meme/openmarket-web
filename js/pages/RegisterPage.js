@@ -18,7 +18,8 @@ class RegisterPage {
             passwordConfirm: { isValid: false, message: '', lastChecked: null },
             name: { isValid: false, message: '', lastChecked: null },
             phone: { isValid: false, message: '', lastChecked: null },
-            terms: { isValid: false, message: '', lastChecked: null }
+            terms: { isValid: false, message: '', lastChecked: null },
+            idDupl: { isValid: false, message: '', lastChecked: null },
         };
 
     }
@@ -171,9 +172,9 @@ class RegisterPage {
             isValid: termsAgree,
             message: termsAgree ? '✓ 약관에 동의하셨습니다.' : '이용약관 및 개인정보처리방침에 동의해주세요.'
         };
-        
+
         this.updateFieldState('terms', result);
-        return result; 
+        return result;
     }
 
 
@@ -237,19 +238,19 @@ class RegisterPage {
 
         if (!password) {
             console.log('📝 패스워드가 비어있음 - 상태 초기화');
-            
+
             // 🔥 빈 패스워드일 때도 전역 상태 업데이트 (중요!)
             const emptyResult = {
                 isValid: false,
                 message: '비밀번호를 입력해주세요.'
             };
-            
+
             this.updateFieldState('password', emptyResult);
-            
+
             // UI 숨김
             messageDiv.classList.add('hidden');
             messageDiv.classList.remove('visible');
-            
+
             console.log('📊 빈 패스워드 상태 업데이트:', this.fieldsState.password);
             return;
         }
@@ -353,7 +354,7 @@ class RegisterPage {
 
         if (target.classList.contains('verify-btn')) {
             event.preventDefault();
-            await this.handleIdCheck(); // 중복확인
+            await this.checkIdDuplicate(); // 중복확인
             return;
         }
 
@@ -371,7 +372,7 @@ class RegisterPage {
 
         if (!termsResult.isValid) {
             alert('❌ 이용약관 및 개인정보처리방침에 동의해주세요!');
-            return; 
+            return;
         }
 
         if (this.checkAllValid()) {
@@ -381,58 +382,58 @@ class RegisterPage {
         }
     }
 
-    async checkAllValid() {
+    checkAllValid() {
         const allValid = Object.values(this.fieldsState).every(field => field.isValid);
         console.log(`전체 필드 유효성: ${allValid ? '✅' : '❌'}`);
         return allValid;
     }
-    
+
     /**
      * 뉴비
      */
     async validateAllFields22() {
         console.log('🔥 회원가입 버튼 클릭 - 전체 검증 시작');
-    
+
         // 전체 필드 검증 실행 및 결과 확인
         const isAllValid = await this.validateAllFields();
-        
+
         console.log('📊 전체 검증 결과:', isAllValid);
         console.log('📊 현재 필드 상태:', this.fieldsState);
-        
+
         if (isAllValid) {
             console.log('✅ 모든 필드 검증 통과 - 회원가입 진행');
             // 실제 회원가입 처리
             // await this.submitRegistration();
         } else {
             console.log('❌ 일부 필드가 유효하지 않음 - 회원가입 차단');
-            
+
             // 유효하지 않은 필드들 찾기
             const invalidFields = this.getInvalidFields();
             console.log('유효하지 않은 필드들:', invalidFields);
-            
+
             // 사용자에게 알림
             alert(`다음 항목을 확인해주세요:\n${invalidFields.join(', ')}`);
-            
+
             // 첫 번째 유효하지 않은 필드로 포커스 이동
             // this.focusFirstInvalidField();
         }
     }
 
     // ✅ 유효하지 않은 필드 목록 반환 헬퍼 함수
-getInvalidFields() {
-    const fieldNames = {
-        username: '아이디',
-        password: '비밀번호',
-        passwordConfirm: '비밀번호 확인',
-        name: '이름',
-        phone: '휴대폰',
-        terms: '약관동의'
-    };
-    
-    return Object.keys(this.fieldsState)
-        .filter(field => !this.fieldsState[field]?.isValid)
-        .map(field => fieldNames[field] || field);
-}
+    getInvalidFields() {
+        const fieldNames = {
+            username: '아이디',
+            password: '비밀번호',
+            passwordConfirm: '비밀번호 확인',
+            name: '이름',
+            phone: '휴대폰',
+            terms: '약관동의'
+        };
+
+        return Object.keys(this.fieldsState)
+            .filter(field => !this.fieldsState[field]?.isValid)
+            .map(field => fieldNames[field] || field);
+    }
 
     /**
      * 📋 모든 필드 유효성 검사
@@ -513,16 +514,16 @@ getInvalidFields() {
                 message: '비밀번호를 입력해주세요.'
             };
         }
-    
+
         const checks = {
             length: password.length >= 8,
             lowercase: /[a-z]/.test(password),
             number: /\d/.test(password),
             noSpaces: !/\s/.test(password)
         };
-    
+
         const needed = [];
-    
+
         if (!checks.length) {
             needed.push('8자 이상');
         }
@@ -535,12 +536,12 @@ getInvalidFields() {
         if (!checks.noSpaces) {
             needed.push('공백 제거');
         }
-    
+
         // ✅ 올바른 반환값
         return {
             isValid: needed.length === 0,
-            message: needed.length === 0 ? 
-                '✓ 안전한 비밀번호입니다!' : 
+            message: needed.length === 0 ?
+                '✓ 안전한 비밀번호입니다!' :
                 `${needed.join(', ')} 필요`
         };
     }
@@ -819,7 +820,7 @@ getInvalidFields() {
     /**
      * 🔍 ID 중복확인 async 처리
      */
-    async handleIdCheck(button) {
+    async checkIdDuplicate(button) {
         console.log('🔍 ID 중복확인 시작');
 
         // 현재 입력된 아이디 가져오기
@@ -832,18 +833,41 @@ getInvalidFields() {
 
         // 1. 입력값 검증
         if (!username) {
-            this.showMessage('아이디를 입력해주세요.');
+
+            const result = {
+                isValid: false,
+                message: '아이디를 입력해주세요.'
+            };
+
+            // 🔥 전역 상태 업데이트
+            this.updateFieldState('username', result);
+            this.showFieldMessage('buyer-id-message', result);
+
+
             usernameInput.focus();
             return;
         }
 
         if (username.length > 20 || !/^[a-zA-Z0-9]+$/.test(username)) {
-            this.showMessage('ID는 20자 이내의 영어, 숫자만 가능합니다.');
+            const result = {
+                isValid: false,
+                message: 'ID는 20자 이내의 영어, 숫자만 가능합니다.'
+            };
+
+            // 🔥 전역 상태 업데이트
+            this.updateFieldState('username', result);
+            this.showFieldMessage('buyer-id-message', result);
+
             return;
         }
 
-        this.showMessage('확인 중...');
-        // this.setButtonLoading(button, true);
+        // 로딩 상태 표시
+        const loadingResult = {
+            isValid: false,
+            message: '확인 중...'
+        };
+        this.updateFieldState('username', loadingResult);
+        this.showFieldMessage('buyer-id-message', loadingResult);
 
         try {
             // 3. ⭐ API 요청 (async)
@@ -856,7 +880,11 @@ getInvalidFields() {
             });
 
             if (response.ok) {
-                this.showMessage('✓ 사용 가능한 아이디입니다!', 'success');
+                result = {
+                    isValid: true,
+                    message: '✓ 사용 가능한 아이디입니다!'
+                };
+
                 console.log('✅ ID 중복확인 성공');
 
             } else {
@@ -869,17 +897,29 @@ getInvalidFields() {
                 } else if (errorData.username) {
                     errorText = errorData.username[0];
                 }
-                this.showMessage(errorText, 'error');
+                result = {
+                    isValid: false,
+                    message: errorText
+                };
 
                 console.log('❌ ID 중복확인 실패:', errorText);
             }
 
+            // 🔥 전역 상태 업데이트
+            this.updateFieldState('idDupl', result);
+            this.showFieldMessage('buyer-id-message', result);
+
         } catch (error) {
             // 🚨 네트워크 오류
             console.error('❌ ID 중복확인 API 오류:', error);
+            const errorResult = {
+                isValid: false,
+                message: '네트워크 오류가 발생했습니다.'
+            };
 
-            this.hideMessage(loadingMessage);
-            this.showMessage('네트워크 오류가 발생했습니다.', 'error');
+            // 🔥 전역 상태 업데이트
+            this.updateFieldState('idDupl', errorResult);
+            this.showFieldMessage('buyer-id-message', errorResult);
 
         } finally {
             // 5. 로딩 상태 해제
