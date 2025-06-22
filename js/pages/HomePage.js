@@ -8,6 +8,8 @@ export default class HomePage {
         this.heroSlider = new HeroSlider();
         this.productGrid = new ProductGrid();
         this.pageTitle = "pipi 홈페이지";
+
+      
     }
 
     render() {

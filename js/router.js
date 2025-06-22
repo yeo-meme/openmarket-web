@@ -191,18 +191,18 @@ router.addRoute('/register', async () => {
 
   
   // 추가 라우트 예시
-  router.addRoute('/about', async () => {
-    const { default: AboutPage } = await import('./pages/aboutpage.js');
-    return AboutPage;
-  });
+  // router.addRoute('/about', async () => {
+  //   const { default: AboutPage } = await import('./pages/aboutpage.js');
+  //   return AboutPage;
+  // });
 
 
   
   
-  router.addRoute('/contact', async () => {
-    const { default: ContactPage } = await import('./pages/contactpage.js');
-    return ContactPage;
-  });
+  // router.addRoute('/contact', async () => {
+  //   const { default: ContactPage } = await import('./pages/contactpage.js');
+  //   return ContactPage;
+  // });
   
   export default router;
 

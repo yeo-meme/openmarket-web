@@ -6,6 +6,12 @@ export default class Header {
     constructor(router) {
         this.router = router;  // 라우터 인스턴스 받기
         this.loadCSS();
+
+        if (window.location.hostname === 'localhost') {
+            setTimeout(() => {
+                this.startTokenMonitoring();
+            }, 1000); // 1초 후 시작
+        }
     }
 
     loadCSS() {

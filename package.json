@@ -1,0 +1,22 @@
+{
+  "name": "openmarket-web",
+  "version": "1.0.0",
+  "description": "오픈마켓 서비스는 판매자와 구매자를 구별하여 판매자가 상품을 등록, 판매하며 구매자는 구매하는 서비스입니다.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeo-meme/openmarket-web.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yeo-meme/openmarket-web/issues"
+  },
+  "homepage": "https://github.com/yeo-meme/openmarket-web#readme"
+}

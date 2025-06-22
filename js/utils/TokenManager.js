@@ -35,7 +35,6 @@ export class TokenManager {
             refreshTokenExpiresAt: new Date(tokenData.refreshTokenExpiresAt).toLocaleString()
         });
 
-        // 자동 갱신 타이머 설정
         this.setupAutoRefresh();
     }
 
@@ -164,6 +163,7 @@ export class TokenManager {
      * 자동 갱신 타이머 설정
      */
     setupAutoRefresh() {
+
         // 기존 타이머 클리어
         if (this.refreshTimer) {
             clearTimeout(this.refreshTimer);
@@ -252,6 +252,51 @@ export class TokenManager {
             window.router.navigateTo('/login');
         }
     }
+
+    /**
+     * 토큰 갱신 시간 모니터링 시작
+     */
+    startTokenMonitoring() {
+        // 기존 모니터링이 있으면 중지
+        if (this.monitoringInterval) {
+            clearInterval(this.monitoringInterval);
+        }
+        
+        this.monitoringInterval = setInterval(() => {
+            const tokenData = this.getTokenData();
+            
+            if (!tokenData) {
+                console.log('⏰ 토큰 없음 - 로그인 필요');
+                return;
+            }
+            
+            const now = Date.now();
+            const accessTimeLeft = tokenData.accessTokenExpiresAt - now;
+            const refreshTimeLeft = tokenData.refreshTokenExpiresAt - now;
+            
+            // 액세스 토큰 남은 시간
+            const accessMinutes = Math.floor(accessTimeLeft / (1000 * 60));
+            const accessSeconds = Math.floor((accessTimeLeft % (1000 * 60)) / 1000);
+            
+            // 리프레시 토큰 남은 시간
+            const refreshHours = Math.floor(refreshTimeLeft / (1000 * 60 * 60));
+            const refreshMinutes = Math.floor((refreshTimeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            
+            if (accessTimeLeft > 0) {
+                console.log(`⏰ 액세스 토큰 갱신까지: ${accessMinutes}분 ${accessSeconds}초 남음 | 리프레시 토큰: ${refreshHours}시간 ${refreshMinutes}분 남음`);
+            } else {
+                console.log('🔄 액세스 토큰 만료됨 - 갱신 필요');
+            }
+            
+            // 갱신 타이머 상태
+            const timerStatus = this.refreshTimer ? '활성' : '비활성';
+            console.log(`🤖 자동갱신 타이머: ${timerStatus} | 현재시간: ${new Date().toLocaleTimeString()}`);
+            
+        }, 1000); // 1초마다 확인
+        
+        console.log('🎯 토큰 모니터링 시작됨 (1초마다 출력)');
+    }
+
 }
 
 // 전역 토큰 매니저 인스턴스
