@@ -18,7 +18,7 @@ export default class HomePage {
         page.appendChild(headerSection);
 
         // 슬라이드 섹션 추가
-        page.appendChild(this.heroSlider.render());
+        // page.appendChild(this.heroSlider.render());
 
         // 2. 상품 그리드 섹션
         const productSection = this.productGrid.render();

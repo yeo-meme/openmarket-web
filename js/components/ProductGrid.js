@@ -11,6 +11,8 @@ export default class ProductGrid {
     this.apiManager = apiManager;
     this.products = [];
     this.isLoaded = false;
+
+    this.router = router;
     console.log('🛍️ ProductGrid 인스턴스 생성됨');
   }
 
@@ -39,24 +41,33 @@ export default class ProductGrid {
   async loadProducts() {
     if (this.isLoaded) return;
 
-      this.apiManager.getProducts()
+    this.apiManager.getProducts()
       .then(response => {
         this.products = response?.results ?? [];
         this.updateUI();
         this.isLoaded = true;
       })
-      .catch(error=> {
+      .catch(error => {
         console.error('❌ 렌더링 실패:', error);
       });
   }
 
   updateUI() {
-    this.element.innerHTML = `
-        <div class="products-grid">
-            ${this.products.map(product => this.createProductCard(product)).join('')}
-        </div>
-    `;
-}
+    const container = this.element.querySelector('[data-products-container]');
+
+    if (this.products.length > 0) {
+      container.innerHTML = this.products
+        .map(product => this.createProductCard(product))
+        .join('');
+
+      this.bindProductEvents();
+    } else {
+      container.innerHTML = '<p>상품이 없습니다.</p>';
+    }
+
+
+
+  }
 
   render() {
     // this.createElement();
@@ -77,7 +88,7 @@ export default class ProductGrid {
           <button class="filter-btn" data-filter="accessory">액세서리</button>
         </div>
 
-        <div class="products-grid">
+          <div class="products-grid" data-products-container>
           ${this.products.map(product => this.createProductCard(product)).join('')}
         </div>
 
@@ -135,12 +146,11 @@ export default class ProductGrid {
   //  }
 
   createProductCard(product) {
-
     const discountRate = product.originalPrice ?
       Math.round((1 - parseInt(product.price.replace(/[^0-9]/g, '')) / parseInt(product.originalPrice.replace(/[^0-9]/g, ''))) * 100) : 0;
 
     return `
-        <div class="product-card" data-id="${product.info}" data-category="${this.getProductCategory(product.id)}">
+        <div class="product-card" data-id="${product.info}"  data-product-id="${product.id}" >
           ${product.badge ? `<div class="product-badge ${product.badge.toLowerCase()}">${product.badge}</div>` : ''}
           
           <div class="product-image">
@@ -619,6 +629,48 @@ export default class ProductGrid {
     console.log(`🎨 HTML 생성 완료: ${this.products.length}개 상품`);
   }
 
+
+  bindProductEvents() {
+    const productCards = this.element.querySelectorAll('.product-card');
+    const detailButtons = this.element.querySelectorAll('.btn-detail');
+
+    // 상품 카드 클릭 이벤트
+    productCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+
+        console.log('프로덕트 아이디--------:', card.dataset.productId);
+
+        const productId = card.dataset.productId;
+        if (this.router && this.router.navigateTo) {
+          this.navigateToDetail(productId);
+        } else {
+          console.error('❌ router가 없거나 navigateTo 메서드가 없습니다');
+        }
+
+      });
+    });
+
+    // 상세보기 버튼 클릭 이벤트 (이벤트 버블링 방지)
+    // detailButtons.forEach(button => {
+    //     button.addEventListener('click', (e) => {
+    //         e.stopPropagation(); 
+    //         console.log('상품 이미지 클릭!');
+    //         const productId = button.dataset.productId;
+    //         this.navigateToDetail(productId);
+    //     });
+    // });
+  }
+
+
+  navigateToDetail(productId) {
+    const product = this.products.find(p => p.id == productId);
+    this.router.navigateTo(`/detailProduct`, { 
+      productId: productId,
+      product: product 
+  });
+  }
+
+
   bindEvents() {
     if (!this.element) return;
 
@@ -968,7 +1020,6 @@ export default class ProductGrid {
 
     document.body.appendChild(notification);
 
-    // 3초 후 제거
     setTimeout(() => {
       if (document.body.contains(notification)) {
         notification.style.animation = 'slideInRight 0.3s ease reverse';
@@ -980,6 +1031,8 @@ export default class ProductGrid {
       }
     }, 3000);
   }
+
+
 
   destroy() {
     console.log('🧹 ProductGrid 정리 시작');

@@ -5,6 +5,8 @@ class Router {
       this.currentRoute = '';
       this.pageChangeCallback = null;
       this.isNavigating = false; // ⭐ 네비게이션 상태 추가
+
+      this.currentStateData = {}; 
     }
   
     // 라우트 등록
@@ -49,13 +51,14 @@ class Router {
     }
   
     // 페이지 이동
-    navigateTo(url) {
+    navigateTo(url,data={}) {
       console.log(`🚀 navigateTo 호출: ${window.location.pathname} → ${url}`);
-        
+      console.log('🚀 받은 데이터:', data);
+
       if (url !== window.location.pathname) {
           this.isNavigating = true; // ⭐ 네비게이션 시작
           
-          history.pushState(null, null, url);
+          history.pushState(data, null, url);
           this.handleRoute();
       } else {
           console.log('⚠️ 같은 경로이거나 이미 네비게이션 중:', url);
@@ -65,13 +68,16 @@ class Router {
     // 현재 경로에 따른 페이지 로드
     async handleRoute() {
       const path = window.location.pathname;
-
+      const stateData = window.history.state || {};
       console.log(`🔄 라우트 처리: ${path}`);
       console.log('📋 등록된 라우트들:', Object.keys(this.routes));
       console.log('🎯 페이지 변경 콜백 등록됨:', !!this.pageChangeCallback);
       
       const route = this.routes[path] || this.routes['/'];
       console.log('🎯 선택된 라우트:', route ? '찾음' : '없음');
+      
+      this.currentStateData = stateData;
+
 
       if (route && this.pageChangeCallback) {
         try {
@@ -80,8 +86,11 @@ class Router {
           const PageClass = await route(); //return 받는곳
           console.log('✅ 페이지 모듈 로드 완료:', PageClass.name);
           
-          this.pageChangeCallback(PageClass); //main.js로 전달
-          this.currentRoute = path;
+            this.pageChangeCallback(PageClass); //main.js로 전달
+            this.currentRoute = path;
+         
+        
+       
           
         } catch (error) {
           console.error('❌ 라우트 처리 오류:', error);
@@ -200,6 +209,20 @@ router.addRoute('/register', async () => {
           
           destroy() {}
       };
+  }
+});
+
+
+router.addRoute('/detailProduct', async () => {
+ const stateData = router.currentStateData;
+  console.log('📦 받은 stateData:', stateData);
+  try {
+    const { default: DetailPage } = await import('./pages/DetailPage.js');
+    console.log('✅ detailPage 모듈 로드 완료');
+   return DetailPage;
+  } catch (error) {
+    console.error('❌ detailPage 로드 실패:', error);
+    throw error;
   }
 });
 

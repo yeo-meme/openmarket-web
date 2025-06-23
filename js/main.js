@@ -100,40 +100,28 @@ class App {
     }
 
     async renderPage(PageClass) {
-        const app = document.getElementById('app');
-
-        // app.innerHTML = ''; // ← 강제로 모든 내용 제거
         console.log('🎨 페이지 렌더링 시작:', PageClass.name);
-
+        const app = document.getElementById('app');
         await this.cleanupCurrentPage();
-        // if (this.currentPage && this.currentPage.destroy) {
-        //     console.log('🧹 이전 페이지 정리 중...');
-        //     this.currentPage.destroy();
-        // }
-
-        // const existingPage = app.querySelector('main#main-content');
-        // if (existingPage) {
-        //     existingPage.innerHTML = ''; 
-        //     existingPage.remove();
-        // } 
-
+        
         try {
-            console.log('🏗️ 새 페이지 인스턴스 생성 중...');
-            this.currentPage = new PageClass();
-
-           // 3. 페이지 레이아웃 타입 확인
-           const layoutType = this.currentPage.getLayoutType ? 
+            // ✅ 페이지별로 다른 생성자 인수 처리
+            if (window.location.pathname === '/detailProduct') {
+                // 🎯 상세페이지는 상품 데이터 필요
+                const stateData = router.currentStateData || {};
+                this.currentPage = new PageClass(stateData.productId, stateData.product);
+            } else {
+                // 🏠 다른 페이지들은 기본 생성
+                this.currentPage = new PageClass(router);
+            }
+            
+            const layoutType = this.currentPage.getLayoutType ? 
                               this.currentPage.getLayoutType() : 'full-page';
-           
-           console.log('📋 페이지 레이아웃 타입:', layoutType);
-           
-           await this.renderByLayoutType(app, layoutType);
-           
-           // 5. 페이지 타이틀 및 메타 설정
-        //    this.updatePageMeta();
-           
-           console.log('✅ 페이지 렌더링 완료:', PageClass.name);
-
+            
+            await this.renderByLayoutType(app, layoutType);
+            
+            console.log('✅ 페이지 렌더링 완료:', PageClass.name);
+            
         } catch (error) {
             console.error('페이지 렌더링 오류:', error);
             this.showError('페이지를 불러오는 중 오류가 발생했습니다.');
