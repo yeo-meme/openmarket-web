@@ -22,7 +22,7 @@ export default class HomePage {
 
         // 2. 상품 그리드 섹션
         const productSection = this.productGrid.render();
-        // page.appendChild(productSection);
+        page.appendChild(productSection);
         
         this.addPageAnimation(page);
 

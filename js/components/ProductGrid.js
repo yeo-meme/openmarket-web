@@ -9,7 +9,8 @@ export default class ProductGrid {
   constructor() {
     this.element = null;
     this.apiManager = apiManager;
-
+    this.products = [];
+    this.isLoaded = false;
     console.log('🛍️ ProductGrid 인스턴스 생성됨');
   }
 
@@ -35,67 +36,65 @@ export default class ProductGrid {
   // }
 
 
-  async render() {
-    console.log('🎨 ProductGrid 렌더링 시작');
+  async loadProducts() {
+    if (this.isLoaded) return;
 
-    try {
-      console.log('📦 ProductGrid 렌더링 시작');
-
-      // API 호출
-      const response = await this.apiManager.getProducts();
-
-      // 응답 처리
-      if (Array.isArray(response)) {
-        this.products = response;
-      } else if (response && response.results) {
-        this.products = response.results;
-      }
-      // this.createElement();
-
-      // 2. 백그라운드에서 API 호출 (비동기)
-      //  this.loadProductsInBackground();
-
-      console.log('✅ ProductGrid 렌더링 완료');
-
-      // this.element = document.createElement('section');
-      // this.element.className = 'product-grid';
-      // this.element.innerHTML = `
-      //   <div class="container">
-      //     <div class="section-header">
-      //       <h2>인기 상품</h2>
-      //       <p>KODU의 베스트셀러 제품을 만나보세요</p>
-      //     </div>
-
-      //     <div class="filter-tabs">
-      //       <button class="filter-btn active" data-filter="all">전체</button>
-      //       <button class="filter-btn" data-filter="audio">오디오</button>
-      //       <button class="filter-btn" data-filter="wearable">웨어러블</button>
-      //       <button class="filter-btn" data-filter="accessory">액세서리</button>
-      //     </div>
-
-      //     <div class="products-grid">
-      //       ${this.products.map(product => this.createProductCard(product)).join('')}
-      //     </div>
-
-      //     <div class="load-more-section">
-      //       <button class="load-more-btn">더 많은 상품 보기</button>
-      //     </div>
-      //   </div>
-      // `;
-
-      // this.addStyles();
-      // this.bindEvents();
-
-
-      console.log(`✅ 상품 렌더링 완료: ${this.products.length}개`);
-      return this.element;
-    } catch (error) {
-      console.error('❌ 렌더링 실패:', error);
-      // return this.createErrorElement();
-    }
-
-
+      this.apiManager.getProducts()
+      .then(response => {
+        this.products = response?.results ?? [];
+        this.updateUI();
+        this.isLoaded = true;
+      })
+      .catch(error=> {
+        console.error('❌ 렌더링 실패:', error);
+      });
   }
+
+  updateUI() {
+    this.element.innerHTML = `
+        <div class="products-grid">
+            ${this.products.map(product => this.createProductCard(product)).join('')}
+        </div>
+    `;
+}
+
+  render() {
+    // this.createElement();
+
+    this.element = document.createElement('section');
+    this.element.className = 'product-grid';
+    this.element.innerHTML = `
+      <div class="container">
+        <div class="section-header">
+          <h2>인기 상품</h2>
+          <p>KODU의 베스트셀러 제품을 만나보세요</p>
+        </div>
+
+        <div class="filter-tabs">
+          <button class="filter-btn active" data-filter="all">전체</button>
+          <button class="filter-btn" data-filter="audio">오디오</button>
+          <button class="filter-btn" data-filter="wearable">웨어러블</button>
+          <button class="filter-btn" data-filter="accessory">액세서리</button>
+        </div>
+
+        <div class="products-grid">
+          ${this.products.map(product => this.createProductCard(product)).join('')}
+        </div>
+
+        <div class="load-more-section">
+          <button class="load-more-btn">더 많은 상품 보기</button>
+        </div>
+      </div>
+    `;
+
+    this.addStyles();
+    this.bindEvents();
+    this.loadProducts();
+
+    console.log(`✅ 상품 렌더링 완료: ${this.products.length}개`);
+    return this.element;
+  }
+
 
   /*
   * 백그라운드에서 API 호출 (렌더링과 별도)
@@ -136,11 +135,12 @@ export default class ProductGrid {
   //  }
 
   createProductCard(product) {
+
     const discountRate = product.originalPrice ?
       Math.round((1 - parseInt(product.price.replace(/[^0-9]/g, '')) / parseInt(product.originalPrice.replace(/[^0-9]/g, ''))) * 100) : 0;
 
     return `
-        <div class="product-card" data-id="${product.id}" data-category="${this.getProductCategory(product.id)}">
+        <div class="product-card" data-id="${product.info}" data-category="${this.getProductCategory(product.id)}">
           ${product.badge ? `<div class="product-badge ${product.badge.toLowerCase()}">${product.badge}</div>` : ''}
           
           <div class="product-image">
@@ -154,13 +154,13 @@ export default class ProductGrid {
           <div class="product-info">
             <div class="product-rating">
               ${this.createStarRating(product.rating)}
-              <span class="rating-text">(${product.rating})</span>
+              <span class="rating-text">${product.name}</span>
             </div>
             
-            <h3 class="product-name">${product.name}</h3>
+            <h3 class="product-name">${product.info}</h3>
             
             <div class="product-price">
-              <span class="current-price">${product.price}</span>
+              <span class="current-price">${product.price.toLocaleString()}원</span>
               ${product.originalPrice ? `
                 <span class="original-price">${product.originalPrice}</span>
                 <span class="discount-rate">${discountRate}%</span>
