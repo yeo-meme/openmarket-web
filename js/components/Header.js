@@ -116,42 +116,6 @@ export default class Header  {
         return header;
     }
 
-    // 로그아웃 처리 메서드 수정
-    // handleLogout() {
-    //     // 확인 다이얼로그
-    //     if (confirm('로그아웃 하시겠습니까?')) {
-    //         console.log('🚪 로그아웃 시작');
-
-    //         // 삭제 전 현재 저장된 값들 확인
-    //         console.log('📋 삭제 전 로컬스토리지 상태:');
-    //         console.log('  - accessToken:', localStorage.getItem('accessToken'));
-    //         console.log('  - refreshToken:', localStorage.getItem('refreshToken'));
-    //         console.log('  - userInfo:', localStorage.getItem('userInfo'));
-
-    //         // 로컬스토리지 토큰 및 사용자 정보 삭제
-    //         localStorage.removeItem('accessToken');
-    //         localStorage.removeItem('refreshToken');
-    //         localStorage.removeItem('userInfo');
-
-    //         // 삭제 후 확인
-    //         console.log('🧹 삭제 후 로컬스토리지 상태:');
-    //         console.log('  - accessToken:', localStorage.getItem('accessToken'));
-    //         console.log('  - refreshToken:', localStorage.getItem('refreshToken'));
-    //         console.log('  - userInfo:', localStorage.getItem('userInfo'));
-
-    //         console.log('✅ 로그아웃 완료 - 모든 토큰 삭제됨');
-
-    //         // 알림 표시
-    //         alert('로그아웃되었습니다.');
-
-    //         // 페이지 새로고침하여 헤더 업데이트
-    //         window.location.reload();
-    //     } else {
-    //         console.log('❌ 로그아웃 취소됨');
-    //     }
-    // }
-
-
 
     attachEvents33(header) {
         // 액세스 토큰 확인

@@ -12,11 +12,15 @@
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
+    padding: 0 20px; 
     align-items: center;
+    padding: 0 20px; 
     gap: 2rem;
+    height: 90px;
 }
 
 .logo {
+    margin-left: 20px;
     font-size: 1.5rem;
     font-weight: bold;
     color: #00c851;
@@ -26,6 +30,7 @@
 .search-container {
     flex: 1;
     max-width: 400px;
+    min-width: 400px;
     position: relative;
 }
 
@@ -53,6 +58,7 @@
 .header-actions {
     display: flex;
     gap: 1rem;
+    margin-left: 30rem;
     align-items: center;
 }
 

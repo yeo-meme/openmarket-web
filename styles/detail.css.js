@@ -4,6 +4,7 @@ body {
     line-height: 1.6;
     color: #333;
     background-color: #fff;
+    padding: 0 320px;   
 }
 
 .product-image {
