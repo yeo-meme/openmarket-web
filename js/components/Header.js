@@ -95,7 +95,7 @@ export default class Header  {
         const header = document.createElement('header');
         header.innerHTML = `
       <div class="header-content">
-          <a href="#" class="logo">KODU</a>
+          <a href="#" class="logo" data-action="home">KODU</a>
           <div class="search-container">
               <input type="text" class="search-input" placeholder="상품을 검색해보세요">
               <button class="search-btn">🔍</button>
@@ -118,6 +118,26 @@ export default class Header  {
 
 
     attachEvents33(header) {
+
+        const logo = header.querySelector('.logo');
+        if (logo) {
+            logo.addEventListener('click', (e) => {
+                e.preventDefault(); // 기본 링크 동작 방지
+                console.log('🏠 로고 클릭 - 홈으로 이동');
+                
+                // 라우터 존재 확인
+                if (window.router && window.router.navigateTo) {
+                    window.router.navigateTo('/');
+                } else if (this.router && this.router.navigateTo) {
+                    this.router.navigateTo('/');
+                } else {
+                    console.error('❌ 라우터를 찾을 수 없습니다');
+                    // 백업: 브라우저 기본 네비게이션
+                    window.location.href = '/';
+                }
+            });
+        }
+        
         // 액세스 토큰 확인
         const accessToken = localStorage.getItem('accessToken');
 
