@@ -14,6 +14,7 @@ export default class DetailPage {
     this.contentContainer = null;
 
     this.header = new Header();
+    this.maxStock = 0;
   }
 
   async render() {
@@ -84,13 +85,19 @@ export default class DetailPage {
       return;
     }
 
+    this.maxStock = this.product.stock || 0;
+    console.log('📦 상품 재고량:', this.product.stock);
+
+
     this.contentContainer = document.createElement('div');
     this.contentContainer.className = 'detail-content-wrapper';
     this.element.appendChild(this.contentContainer);
     this.contentContainer.innerHTML = detailPageTemplate(this.product);
+   
+   
     this.loadStyles();
-
     this.bindEvents();
+    this.simpleStockCheck(); // 간단한 체크로 대체
   }
 
 
@@ -100,11 +107,37 @@ export default class DetailPage {
       const quantityInput = this.contentContainer.querySelector('.quantity-input');
       const currentValue = parseInt(quantityInput.value) || 1;
       
-      if (currentValue < 99) {
-          quantityInput.value = currentValue + 1;
-          this.updateTotalPrice();
-      }
+      if (currentValue < this.maxStock) {
+        quantityInput.value = currentValue + 1;
+        this.updateTotalPrice();
+        console.log(`➕ 수량 증가: ${currentValue + 1}/${this.maxStock}`);
+    } else {
+        console.log(`⚠️ 재고 부족: 최대 ${this.maxStock}개`);
+        this.showStockAlert();
+    }
   }
+
+  showStockAlert() {
+    const stockWarning = this.contentContainer.querySelector('#stockWarning');
+    const warningText = stockWarning.querySelector('.warning-text');
+    
+    warningText.textContent = `⚠️ 재고가 ${this.maxStock}개 밖에 없습니다`;
+    stockWarning.style.display = 'block';
+    
+    // 3초 후 자동 숨김
+    setTimeout(() => {
+        stockWarning.style.display = 'none';
+    }, 3000);
+}
+
+
+  simpleStockCheck() {
+    const quantityInput = this.contentContainer.querySelector('.quantity-input');
+    if (quantityInput && this.maxStock > 0) {
+        quantityInput.max = this.maxStock;
+        console.log(`📊 수량 제한 설정: 최대 ${this.maxStock}개`);
+    }
+}
 
   // ✅ 수량 감소
   decreaseQuantity() {
@@ -112,9 +145,11 @@ export default class DetailPage {
       const currentValue = parseInt(quantityInput.value) || 1;
       
       if (currentValue > 1) {
-          quantityInput.value = currentValue - 1;
-          this.updateTotalPrice();
-      }
+        quantityInput.value = currentValue - 1;
+        this.updateTotalPrice();
+        // this.checkStock();
+        console.log(`➖ 수량 감소: ${currentValue - 1}`);
+    }
   }
 
   // ✅ 현재 수량 가져오기
@@ -127,7 +162,7 @@ export default class DetailPage {
   updateTotalPrice() {
       const quantityInput = this.contentContainer.querySelector('.quantity-input');
       const totalPriceElement = this.contentContainer.querySelector('.total-price');
-      const totalQuantityElement = this.contentContainer.querySelector('.total-quantity');
+      // const totalQuantityElement = this.contentContainer.querySelector('.total-quantity');
       
       const quantity = parseInt(quantityInput.value) || 1;
       const basePrice = this.product.price;
@@ -135,7 +170,7 @@ export default class DetailPage {
       
       // ✅ UI 업데이트
       totalPriceElement.textContent = totalPrice.toLocaleString() + '원';
-      totalQuantityElement.textContent = `총 수량 ${quantity}개`;
+      // totalQuantityElement.textContent = `총 수량 ${quantity}개`;
       
       console.log(`💰 총 금액 업데이트: ${quantity}개 × ${basePrice.toLocaleString()}원 = ${totalPrice.toLocaleString()}원`);
   }

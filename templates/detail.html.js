@@ -30,6 +30,9 @@ export const productInfoTemplate = (product) => `
                         <input type="number" class="quantity-input" value="1" min="1" max="99" id="quantity data-price="${product.price}">
                         <button class="quantity-btn" data-action="increase">+</button>
                     </div>
+                    <div class="stock-warning" id="stockWarning" style="display: none;">
+                    <span class="warning-text">⚠️ 재고가 부족합니다</span>
+                </div>
                 </div>
             </div>
 
