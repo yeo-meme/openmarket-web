@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/yeo-meme/openmarket-web/issues"
   },
-  "homepage": "https://github.com/yeo-meme/openmarket-web#readme"
+  "homepage": "https://github.com/yeo-meme/openmarket-web#readme",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
 }

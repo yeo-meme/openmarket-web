@@ -82,6 +82,17 @@ export class TokenManager {
         return await this.refreshAccessToken();
     }
 
+
+    setupAutoRefresh() {  // ← 이 메서드 안에
+        // 기존 타이머 정리
+        if (this.refreshTimer) {
+            clearTimeout(this.refreshTimer);
+        }
+        
+        // ... 토큰 데이터 확인 코드 ...
+   
+    }
+
     /**
      * 액세스 토큰 갱신
      */
@@ -164,17 +175,19 @@ export class TokenManager {
      */
     setupAutoRefresh() {
 
-        // 기존 타이머 클리어
+        // 기존 타이머 클리어 - 정리
         if (this.refreshTimer) {
             clearTimeout(this.refreshTimer);
         }
 
         const tokenData = this.getTokenData();
-        if (!tokenData) return;
+        if (!tokenData) return; //❌ 토큰 데이터 없음 - 자동 갱신 설정 불가
 
         const now = Date.now();
         const timeUntilExpiry = tokenData.accessTokenExpiresAt - now;
-        
+        const refreshTokenExpiry = tokenData.refreshTokenExpiresAt;
+
+
         // 만료 1분 전에 갱신 시도
         const refreshTime = Math.max(0, timeUntilExpiry - 60000);
 
@@ -184,10 +197,28 @@ export class TokenManager {
             갱신예정시간: new Date(now + refreshTime).toLocaleString()
         });
 
+             
         this.refreshTimer = setTimeout(async () => {
-            console.log('🔄 자동 토큰 갱신 실행');
-            await this.refreshAccessToken();
+            // 여기에 알럿 추가 ⭐
+            const userChoice = confirm(
+                '세션이 곧 만료됩니다.\n' +
+                '계속 사용하시겠습니까?\n\n' +
+                '확인: 세션 연장\n' +
+                '취소: 로그아웃'
+            );
+            
+            if (userChoice) {
+                await this.refreshAccessToken();
+            } else {
+                // this.handleSessionExpired();
+                this.clearTokens()
+            }
         }, refreshTime);
+
+        // this.refreshTimer = setTimeout(async () => {
+        //     console.log('🔄 자동 토큰 갱신 실행');
+        //     await this.refreshAccessToken();
+        // }, refreshTime);
     }
 
     /**

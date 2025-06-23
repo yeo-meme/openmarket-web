@@ -2,7 +2,7 @@ import router from '../router.js';
 import { tokenManager } from '../utils/TokenManager.js';
 
 
-export default class Header {
+export default class Header  {
     constructor(router) {
         this.router = router;  // 라우터 인스턴스 받기
         this.loadCSS();
@@ -10,9 +10,32 @@ export default class Header {
         if (window.location.hostname === 'localhost') {
             setTimeout(() => {
                 this.startTokenMonitoring();
-            }, 1000); // 1초 후 시작
+            }, 1000); 
         }
     }
+    startTokenMonitoring() {
+        console.log('토큰 모니터링 시작');
+        
+        setInterval(() => {
+            // 토큰 유효성 검사 로직
+            this.checkTokenValidity();
+        }, 1000); 
+    }
+
+
+      
+    checkTokenValidity() {
+       
+        const token = tokenManager.getTokenStatus();
+        if (!token) {
+            console.log('토큰이 없습니다');
+            return;
+        }
+        
+        // 토큰 만료 시간 확인 등
+        console.log(`${token.accessTokenExpiresAt} ,,,, 토큰 상태 확인 중...`);
+    }
+    
 
     loadCSS() {
         if (!document.querySelector('#header-css')) {
@@ -48,6 +71,10 @@ export default class Header {
         return '../';
     }
 
+    /**
+     * 로그인 정보가 있으면 - 마이페이지 없으면 로그인 처
+     * @returns
+     */
     render() {
         const accessToken = localStorage.getItem('accessToken');
         const userInfo = localStorage.getItem('userInfo');

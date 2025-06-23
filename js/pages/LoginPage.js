@@ -13,10 +13,88 @@ export default class LoginPage {
         this.apiBaseUrl = 'https://api.wenivops.co.kr/services/open-market';
         this.isLoading = false;
 
+        this.tokenManager = tokenManager;
+
         this.loginState = {
             username: { isValid: false, message: '', value: '' },
             password: { isValid: false, message: '', value: '' }
         };
+
+
+    }
+
+    // needRedirectionCheck() {
+    //     const status =this.tokenManager.getTokenStatus();
+        
+    //     if (status.needsRefresh) {
+    //         console.log('🔄 초기화 시 토큰 갱신 필요');
+    //         this.tokenManager.refreshAccessToken();
+    //     } else if (status.accessTokenValid) {
+    //         this.tokenManager.setupAutoRefresh();
+    //     }
+
+    // }
+    async checkTokenAndRedirect() {
+        console.log('🔍 로그인 페이지 - 토큰 상태 체크 및 자동 리다이렉트');
+        
+        // TokenManager의 기존 로직을 그대로 활용
+        const status = this.tokenManager.getTokenStatus();
+        
+        // 토큰이 없거나 모두 만료된 경우만 로그인 페이지 유지
+        if (!status.accessTokenValid && !status.refreshTokenValid) {
+            console.log('❌ 로그인 필요 - 페이지 유지');
+            this.initLoginPage();
+            return;
+        }
+        
+        // 유효한 토큰이 있으면 initAutoRefresh로 처리
+        console.log('🔄 기존 initAutoRefresh 로직 실행');
+        
+        if (status.needsRefresh) {
+            // 갱신 필요한 경우
+            console.log('🔄 토큰 갱신 후 마이페이지 이동');
+            const success = await this.tokenManager.refreshAccessToken();
+            if (success) {
+                this.redirectToMyPage();
+            } else {
+                this.handleTokenRefreshFailed();
+            }
+        } else if (status.accessTokenValid) {
+            // 이미 유효한 경우
+            console.log('✅ 토큰 유효 - 마이페이지 이동');
+            this.tokenManager.setupAutoRefresh();
+            this.redirectToMyPage();
+        }
+    }
+    
+    redirectToMyPage() {
+        setTimeout(() => {
+            console.log('🔄 마이페이지로 리다이렉트');
+            this.router.navigateTo('/mypage');
+        }, 500);
+    }
+    
+    handleTokenRefreshFailed() {
+        console.log('❌ 토큰 갱신 실패 - 로그인 필요');
+        // this.tokenManager.clearTokenData();
+        this.showMessage('세션 갱신에 실패했습니다. 다시 로그인해주세요.');
+        this.initLoginPage();
+    }
+    
+    initLoginPage() {
+        console.log('🖥️ 로그인 페이지 초기화');
+        // this.setupLoginForm();
+        window.router.navigateTo('/login');
+        this.checkRedirectMessage();
+    }
+
+    checkRedirectMessage() {
+        const message = sessionStorage.getItem('redirectMessage');
+        if (message) {
+            // 메시지 표시 (예: alert 또는 화면에 표시)
+            this.showMessage(message);
+            sessionStorage.removeItem('redirectMessage');
+        }
     }
 
     render() {

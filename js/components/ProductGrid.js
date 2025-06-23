@@ -1,79 +1,145 @@
 
 
-import {products} from '../data/products.js';
+import { products } from '../data/products.js';
+import { apiManager } from '../api/ApiService.js';
+
+
 
 export default class ProductGrid {
-    constructor() {
-      this.element = null;
-     
-      this.loadProducts();
-  
-      console.log('🛍️ ProductGrid 인스턴스 생성됨');
-    }
-  
-    loadProducts() {
-        switch (this.dataSource) {
-          case 'popular':
-            this.products = getPopularProducts(this.maxProducts);
-            break;
-          case 'discounted':
-            this.products = products.filter(p => p.originalPrice).slice(0, this.maxProducts);
-            break;
-          case 'new':
-            this.products = products.filter(p => p.badge === 'NEW').slice(0, this.maxProducts);
-            break;
-          case 'instock':
-            this.products = products.filter(p => p.inStock).slice(0, this.maxProducts);
-            break;
-          default:
-            this.products = products.slice(0, this.maxProducts);
-        }
-        
-        console.log(`📊 ${this.dataSource} 제품 로드 완료:`, this.products.map(p => p.name));
+  constructor() {
+    this.element = null;
+    this.apiManager = apiManager;
+
+    console.log('🛍️ ProductGrid 인스턴스 생성됨');
+  }
+
+  // loadProducts() {
+  //   switch (this.dataSource) {
+  //     case 'popular':
+  //       this.products = getPopularProducts(this.maxProducts);
+  //       break;
+  //     case 'discounted':
+  //       this.products = products.filter(p => p.originalPrice).slice(0, this.maxProducts);
+  //       break;
+  //     case 'new':
+  //       this.products = products.filter(p => p.badge === 'NEW').slice(0, this.maxProducts);
+  //       break;
+  //     case 'instock':
+  //       this.products = products.filter(p => p.inStock).slice(0, this.maxProducts);
+  //       break;
+  //     default:
+  //       this.products = products.slice(0, this.maxProducts);
+  //   }
+
+  //   console.log(`📊 ${this.dataSource} 제품 로드 완료:`, this.products.map(p => p.name));
+  // }
+
+
+  async render() {
+    console.log('🎨 ProductGrid 렌더링 시작');
+
+    try {
+      console.log('📦 ProductGrid 렌더링 시작');
+
+      // API 호출
+      const response = await this.apiManager.getProducts();
+
+      // 응답 처리
+      if (Array.isArray(response)) {
+        this.products = response;
+      } else if (response && response.results) {
+        this.products = response.results;
       }
+      // this.createElement();
 
+      // 2. 백그라운드에서 API 호출 (비동기)
+      //  this.loadProductsInBackground();
 
-    render() {
-      console.log('🎨 ProductGrid 렌더링 시작');
-      
-      this.element = document.createElement('section');
-      this.element.className = 'product-grid';
-      this.element.innerHTML = `
-        <div class="container">
-          <div class="section-header">
-            <h2>인기 상품</h2>
-            <p>KODU의 베스트셀러 제품을 만나보세요</p>
-          </div>
-          
-          <div class="filter-tabs">
-            <button class="filter-btn active" data-filter="all">전체</button>
-            <button class="filter-btn" data-filter="audio">오디오</button>
-            <button class="filter-btn" data-filter="wearable">웨어러블</button>
-            <button class="filter-btn" data-filter="accessory">액세서리</button>
-          </div>
-          
-          <div class="products-grid">
-            ${this.products.map(product => this.createProductCard(product)).join('')}
-          </div>
-          
-          <div class="load-more-section">
-            <button class="load-more-btn">더 많은 상품 보기</button>
-          </div>
-        </div>
-      `;
-  
-      this.addStyles();
-      this.bindEvents();
-  
       console.log('✅ ProductGrid 렌더링 완료');
+
+      // this.element = document.createElement('section');
+      // this.element.className = 'product-grid';
+      // this.element.innerHTML = `
+      //   <div class="container">
+      //     <div class="section-header">
+      //       <h2>인기 상품</h2>
+      //       <p>KODU의 베스트셀러 제품을 만나보세요</p>
+      //     </div>
+
+      //     <div class="filter-tabs">
+      //       <button class="filter-btn active" data-filter="all">전체</button>
+      //       <button class="filter-btn" data-filter="audio">오디오</button>
+      //       <button class="filter-btn" data-filter="wearable">웨어러블</button>
+      //       <button class="filter-btn" data-filter="accessory">액세서리</button>
+      //     </div>
+
+      //     <div class="products-grid">
+      //       ${this.products.map(product => this.createProductCard(product)).join('')}
+      //     </div>
+
+      //     <div class="load-more-section">
+      //       <button class="load-more-btn">더 많은 상품 보기</button>
+      //     </div>
+      //   </div>
+      // `;
+
+      // this.addStyles();
+      // this.bindEvents();
+
+
+      console.log(`✅ 상품 렌더링 완료: ${this.products.length}개`);
       return this.element;
+    } catch (error) {
+      console.error('❌ 렌더링 실패:', error);
+      // return this.createErrorElement();
     }
-  
-    createProductCard(product) {
-      const discountRate = product.originalPrice ? 
-        Math.round((1 - parseInt(product.price.replace(/[^0-9]/g, '')) / parseInt(product.originalPrice.replace(/[^0-9]/g, ''))) * 100) : 0;
-  
-      return `
+
+
+  }
+
+  /*
+  * 백그라운드에서 API 호출 (렌더링과 별도)
+  */
+  //  async loadProductsInBackground() {
+  //      console.log('🔄 백그라운드 API 호출 시작');
+
+  //      try {
+  //          // 토큰 체크
+  //         //  const jwt = this.tokenManager?.getTok();
+  //         //  if (!jwt) {
+  //         //      console.warn('⚠️ 토큰 없음, 기본 데이터 유지');
+  //         //      return;
+  //         //  }
+
+  //          // API 호출
+  //          const response = await this.apiManager.getProducts();
+
+  //          // 응답 처리
+  //          if (Array.isArray(response)) {
+  //              this.products = response;
+  //          } else if (response && response.results) {
+  //              this.products = response.results;
+  //          }
+
+  //          // 화면 업데이트
+  //          if (this.element) {
+  //              const productsGrid = this.element.querySelector('.products-grid');
+  //              if (productsGrid) {
+  //                  productsGrid.innerHTML = this.products.map(product => this.createProductCard(product)).join('');
+  //                  console.log(`✅ 화면 업데이트 완료: ${this.products.length}개 상품`);
+  //              }
+  //          }
+
+  //      } catch (error) {
+  //          console.warn('⚠️ API 호출 실패, 기본 데이터 유지:', error.message);
+  //      }
+  //  }
+
+  createProductCard(product) {
+    const discountRate = product.originalPrice ?
+      Math.round((1 - parseInt(product.price.replace(/[^0-9]/g, '')) / parseInt(product.originalPrice.replace(/[^0-9]/g, ''))) * 100) : 0;
+
+    return `
         <div class="product-card" data-id="${product.id}" data-category="${this.getProductCategory(product.id)}">
           ${product.badge ? `<div class="product-badge ${product.badge.toLowerCase()}">${product.badge}</div>` : ''}
           
@@ -111,35 +177,35 @@ export default class ProductGrid {
           </div>
         </div>
       `;
-    }
-  
-    createStarRating(rating) {
-      const fullStars = Math.floor(rating);
-      const hasHalfStar = rating % 1 !== 0;
-      const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-      
-      return `
+  }
+
+  createStarRating(rating) {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    return `
         <div class="stars">
           ${'★'.repeat(fullStars)}
           ${hasHalfStar ? '☆' : ''}
           ${'☆'.repeat(emptyStars)}
         </div>
       `;
-    }
-  
-    getProductCategory(productId) {
-      const categories = {
-        1: 'audio', 2: 'wearable', 3: 'audio', 
-        4: 'audio', 5: 'accessory', 6: 'accessory'
-      };
-      return categories[productId] || 'accessory';
-    }
-  
-    addStyles() {
-      if (!document.getElementById('product-grid-styles')) {
-        const style = document.createElement('style');
-        style.id = 'product-grid-styles';
-        style.textContent = `
+  }
+
+  getProductCategory(productId) {
+    const categories = {
+      1: 'audio', 2: 'wearable', 3: 'audio',
+      4: 'audio', 5: 'accessory', 6: 'accessory'
+    };
+    return categories[productId] || 'accessory';
+  }
+
+  addStyles() {
+    if (!document.getElementById('product-grid-styles')) {
+      const style = document.createElement('style');
+      style.id = 'product-grid-styles';
+      style.textContent = `
           .product-grid {
             padding: 5rem 0;
             background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
@@ -513,180 +579,216 @@ export default class ProductGrid {
             100% { background-position: -200% 0; }
           }
         `;
-        document.head.appendChild(style);
-      }
+      document.head.appendChild(style);
     }
-  
-    bindEvents() {
-      if (!this.element) return;
-  
-      // 필터 버튼 이벤트
-      const filterBtns = this.element.querySelectorAll('.filter-btn');
-      filterBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const filter = e.target.dataset.filter;
-          this.filterProducts(filter);
-          
-          // 활성 버튼 변경
-          filterBtns.forEach(b => b.classList.remove('active'));
-          e.target.classList.add('active');
-        });
+  }
+
+  /**
+   * HTML 요소 생성
+   */
+  createElement() {
+    this.element = document.createElement('section');
+    this.element.className = 'product-grid';
+    this.element.innerHTML = `
+          <div class="container">
+              <div class="section-header">
+                  <h2>인기 상품</h2>
+                  <p>KODU의 베스트셀러 제품을 만나보세요</p>
+              </div>
+              
+              <div class="filter-tabs">
+                  <button class="filter-btn active" data-filter="all">전체</button>
+                  <button class="filter-btn" data-filter="audio">오디오</button>
+                  <button class="filter-btn" data-filter="wearable">웨어러블</button>
+                  <button class="filter-btn" data-filter="accessory">액세서리</button>
+              </div>
+              
+              <div class="products-grid">
+                  ${this.products.map(product => this.createProductCard(product)).join('')}
+              </div>
+              
+              <div class="load-more-section">
+                  <button class="load-more-btn">더 많은 상품 보기</button>
+              </div>
+          </div>
+      `;
+
+    this.addStyles();
+    this.bindEvents();
+
+    console.log(`🎨 HTML 생성 완료: ${this.products.length}개 상품`);
+  }
+
+  bindEvents() {
+    if (!this.element) return;
+
+    // 필터 버튼 이벤트
+    const filterBtns = this.element.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const filter = e.target.dataset.filter;
+        this.filterProducts(filter);
+
+        // 활성 버튼 변경
+        filterBtns.forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
       });
-  
-      // 장바구니 버튼 이벤트
-      const addToCartBtns = this.element.querySelectorAll('.add-to-cart-btn');
-      addToCartBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const productId = parseInt(e.currentTarget.dataset.id);
-          this.addToCart(productId);
-        });
+    });
+
+    // 장바구니 버튼 이벤트
+    const addToCartBtns = this.element.querySelectorAll('.add-to-cart-btn');
+    addToCartBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const productId = parseInt(e.currentTarget.dataset.id);
+        this.addToCart(productId);
       });
-  
-      // 바로 구매 버튼 이벤트
-      const buyNowBtns = this.element.querySelectorAll('.buy-now-btn');
-      buyNowBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const productId = parseInt(e.currentTarget.dataset.id);
-          this.buyNow(productId);
-        });
+    });
+
+    // 바로 구매 버튼 이벤트
+    const buyNowBtns = this.element.querySelectorAll('.buy-now-btn');
+    buyNowBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const productId = parseInt(e.currentTarget.dataset.id);
+        this.buyNow(productId);
       });
-  
-      // 빠른 보기 버튼 이벤트
-      const quickViewBtns = this.element.querySelectorAll('.quick-view-btn');
-      quickViewBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const productId = parseInt(e.currentTarget.dataset.id);
-          this.quickView(productId);
-        });
+    });
+
+    // 빠른 보기 버튼 이벤트
+    const quickViewBtns = this.element.querySelectorAll('.quick-view-btn');
+    quickViewBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const productId = parseInt(e.currentTarget.dataset.id);
+        this.quickView(productId);
       });
-  
-      // 위시리스트 버튼 이벤트
-      const wishlistBtns = this.element.querySelectorAll('.wishlist-btn');
-      wishlistBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const productId = parseInt(e.currentTarget.dataset.id);
-          this.toggleWishlist(productId, e.currentTarget);
-        });
+    });
+
+    // 위시리스트 버튼 이벤트
+    const wishlistBtns = this.element.querySelectorAll('.wishlist-btn');
+    wishlistBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const productId = parseInt(e.currentTarget.dataset.id);
+        this.toggleWishlist(productId, e.currentTarget);
       });
-  
-      // 더 보기 버튼 이벤트
-      const loadMoreBtn = this.element.querySelector('.load-more-btn');
-      loadMoreBtn?.addEventListener('click', () => {
-        this.loadMoreProducts();
-      });
-  
-      // 제품 카드 클릭 이벤트
-      const productCards = this.element.querySelectorAll('.product-card');
-      productCards.forEach(card => {
-        card.addEventListener('click', (e) => {
-          if (!e.target.closest('button')) {
-            const productId = parseInt(card.dataset.id);
-            this.viewProduct(productId);
-          }
-        });
-      });
-  
-      console.log('🔗 ProductGrid 이벤트 바인딩 완료');
-    }
-  
-    filterProducts(filter) {
-      const productCards = this.element.querySelectorAll('.product-card');
-      
-      productCards.forEach(card => {
-        const category = card.dataset.category;
-        const shouldShow = filter === 'all' || category === filter;
-        
-        if (shouldShow) {
-          card.style.display = 'block';
-          card.style.animation = 'fadeInUp 0.5s ease-out';
-        } else {
-          card.style.display = 'none';
+    });
+
+    // 더 보기 버튼 이벤트
+    const loadMoreBtn = this.element.querySelector('.load-more-btn');
+    loadMoreBtn?.addEventListener('click', () => {
+      this.loadMoreProducts();
+    });
+
+    // 제품 카드 클릭 이벤트
+    const productCards = this.element.querySelectorAll('.product-card');
+    productCards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (!e.target.closest('button')) {
+          const productId = parseInt(card.dataset.id);
+          this.viewProduct(productId);
         }
       });
-  
-      console.log(`🔍 제품 필터링 완료: ${filter}`);
-    }
-  
-    addToCart(productId) {
-      const product = this.products.find(p => p.id === productId);
-      if (product) {
-        // 실제 장바구니 로직 구현
-        this.showNotification(`${product.name}이(가) 장바구니에 추가되었습니다!`, 'success');
-        
-        // 애니메이션 효과
-        const btn = this.element.querySelector(`[data-id="${productId}"].add-to-cart-btn`);
-        if (btn) {
-          btn.style.background = 'linear-gradient(45deg, #27ae60, #229954)';
-          btn.innerHTML = '<span class="btn-text">추가됨!</span><span class="btn-icon">✓</span>';
-          
-          setTimeout(() => {
-            btn.style.background = 'linear-gradient(45deg, #3498db, #2980b9)';
-            btn.innerHTML = '<span class="btn-text">장바구니 담기</span><span class="btn-icon">🛒</span>';
-          }, 2000);
-        }
-        
-        console.log(`🛒 장바구니 추가: ${product.name}`);
-      }
-    }
-  
-    buyNow(productId) {
-      const product = this.products.find(p => p.id === productId);
-      if (product) {
-        this.showNotification(`${product.name} 구매 페이지로 이동합니다.`, 'info');
-        // 실제 구매 페이지로 이동 로직
-        console.log(`💳 바로 구매: ${product.name}`);
-      }
-    }
-  
-    quickView(productId) {
-      const product = this.products.find(p => p.id === productId);
-      if (product) {
-        // 모달 창으로 제품 상세 정보 표시
-        this.showQuickViewModal(product);
-        console.log(`👁️ 빠른 보기: ${product.name}`);
-      }
-    }
-  
-    toggleWishlist(productId, btn) {
-      const isWishlisted = btn.textContent === '❤️';
-      
-      if (isWishlisted) {
-        btn.textContent = '♡';
-        btn.style.color = '#6c757d';
-        this.showNotification('위시리스트에서 제거되었습니다.', 'info');
+    });
+
+    console.log('🔗 ProductGrid 이벤트 바인딩 완료');
+  }
+
+  filterProducts(filter) {
+    const productCards = this.element.querySelectorAll('.product-card');
+
+    productCards.forEach(card => {
+      const category = card.dataset.category;
+      const shouldShow = filter === 'all' || category === filter;
+
+      if (shouldShow) {
+        card.style.display = 'block';
+        card.style.animation = 'fadeInUp 0.5s ease-out';
       } else {
-        btn.textContent = '❤️';
-        btn.style.color = '#e74c3c';
-        this.showNotification('위시리스트에 추가되었습니다!', 'success');
+        card.style.display = 'none';
       }
-      
-      console.log(`💝 위시리스트 토글: ${productId}, 상태: ${!isWishlisted}`);
-    }
-  
-    viewProduct(productId) {
-      const product = this.products.find(p => p.id === productId);
-      if (product) {
-        console.log(`📄 제품 상세 보기: ${product.name}`);
-        // 실제로는 제품 상세 페이지로 라우팅
-        this.showNotification(`${product.name} 상세 페이지로 이동합니다.`, 'info');
+    });
+
+    console.log(`🔍 제품 필터링 완료: ${filter}`);
+  }
+
+  addToCart(productId) {
+    const product = this.products.find(p => p.id === productId);
+    if (product) {
+      // 실제 장바구니 로직 구현
+      this.showNotification(`${product.name}이(가) 장바구니에 추가되었습니다!`, 'success');
+
+      // 애니메이션 효과
+      const btn = this.element.querySelector(`[data-id="${productId}"].add-to-cart-btn`);
+      if (btn) {
+        btn.style.background = 'linear-gradient(45deg, #27ae60, #229954)';
+        btn.innerHTML = '<span class="btn-text">추가됨!</span><span class="btn-icon">✓</span>';
+
+        setTimeout(() => {
+          btn.style.background = 'linear-gradient(45deg, #3498db, #2980b9)';
+          btn.innerHTML = '<span class="btn-text">장바구니 담기</span><span class="btn-icon">🛒</span>';
+        }, 2000);
       }
+
+      console.log(`🛒 장바구니 추가: ${product.name}`);
     }
-  
-    loadMoreProducts() {
-      // 실제로는 API에서 추가 제품을 로드
-      this.showNotification('추가 제품을 불러오는 중...', 'info');
-      console.log('📦 추가 제품 로딩...');
+  }
+
+  buyNow(productId) {
+    const product = this.products.find(p => p.id === productId);
+    if (product) {
+      this.showNotification(`${product.name} 구매 페이지로 이동합니다.`, 'info');
+      // 실제 구매 페이지로 이동 로직
+      console.log(`💳 바로 구매: ${product.name}`);
     }
-  
-    showQuickViewModal(product) {
-      // 간단한 모달 구현
-      const modal = document.createElement('div');
-      modal.className = 'quick-view-modal';
-      modal.innerHTML = `
+  }
+
+  quickView(productId) {
+    const product = this.products.find(p => p.id === productId);
+    if (product) {
+      // 모달 창으로 제품 상세 정보 표시
+      this.showQuickViewModal(product);
+      console.log(`👁️ 빠른 보기: ${product.name}`);
+    }
+  }
+
+  toggleWishlist(productId, btn) {
+    const isWishlisted = btn.textContent === '❤️';
+
+    if (isWishlisted) {
+      btn.textContent = '♡';
+      btn.style.color = '#6c757d';
+      this.showNotification('위시리스트에서 제거되었습니다.', 'info');
+    } else {
+      btn.textContent = '❤️';
+      btn.style.color = '#e74c3c';
+      this.showNotification('위시리스트에 추가되었습니다!', 'success');
+    }
+
+    console.log(`💝 위시리스트 토글: ${productId}, 상태: ${!isWishlisted}`);
+  }
+
+  viewProduct(productId) {
+    const product = this.products.find(p => p.id === productId);
+    if (product) {
+      console.log(`📄 제품 상세 보기: ${product.name}`);
+      // 실제로는 제품 상세 페이지로 라우팅
+      this.showNotification(`${product.name} 상세 페이지로 이동합니다.`, 'info');
+    }
+  }
+
+  loadMoreProducts() {
+    // 실제로는 API에서 추가 제품을 로드
+    this.showNotification('추가 제품을 불러오는 중...', 'info');
+    console.log('📦 추가 제품 로딩...');
+  }
+
+  showQuickViewModal(product) {
+    // 간단한 모달 구현
+    const modal = document.createElement('div');
+    modal.className = 'quick-view-modal';
+    modal.innerHTML = `
         <div class="modal-backdrop">
           <div class="modal-content">
             <button class="modal-close">×</button>
@@ -709,12 +811,12 @@ export default class ProductGrid {
           </div>
         </div>
       `;
-  
-      // 모달 스타일 추가
-      if (!document.getElementById('modal-styles')) {
-        const style = document.createElement('style');
-        style.id = 'modal-styles';
-        style.textContent = `
+
+    // 모달 스타일 추가
+    if (!document.getElementById('modal-styles')) {
+      const style = document.createElement('style');
+      style.id = 'modal-styles';
+      style.textContent = `
           .quick-view-modal {
             position: fixed;
             top: 0;
@@ -798,49 +900,49 @@ export default class ProductGrid {
             }
           }
         `;
-        document.head.appendChild(style);
-      }
-  
-      document.body.appendChild(modal);
-  
-      // 모달 이벤트
-      const closeBtn = modal.querySelector('.modal-close');
-      const backdrop = modal.querySelector('.modal-backdrop');
-      
-      const closeModal = () => {
-        document.body.removeChild(modal);
-      };
-  
-      closeBtn.addEventListener('click', closeModal);
-      backdrop.addEventListener('click', (e) => {
-        if (e.target === backdrop) closeModal();
-      });
-  
-      // 모달 내 버튼 이벤트
-      const modalCartBtn = modal.querySelector('.modal-cart-btn');
-      const modalBuyBtn = modal.querySelector('.modal-buy-btn');
-  
-      modalCartBtn.addEventListener('click', () => {
-        this.addToCart(product.id);
-        closeModal();
-      });
-  
-      modalBuyBtn.addEventListener('click', () => {
-        this.buyNow(product.id);
-        closeModal();
-      });
+      document.head.appendChild(style);
     }
-  
-    showNotification(message, type = 'info') {
-      const notification = document.createElement('div');
-      notification.className = `notification notification-${type}`;
-      notification.textContent = message;
-  
-      // 알림 스타일 추가
-      if (!document.getElementById('notification-styles')) {
-        const style = document.createElement('style');
-        style.id = 'notification-styles';
-        style.textContent = `
+
+    document.body.appendChild(modal);
+
+    // 모달 이벤트
+    const closeBtn = modal.querySelector('.modal-close');
+    const backdrop = modal.querySelector('.modal-backdrop');
+
+    const closeModal = () => {
+      document.body.removeChild(modal);
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) closeModal();
+    });
+
+    // 모달 내 버튼 이벤트
+    const modalCartBtn = modal.querySelector('.modal-cart-btn');
+    const modalBuyBtn = modal.querySelector('.modal-buy-btn');
+
+    modalCartBtn.addEventListener('click', () => {
+      this.addToCart(product.id);
+      closeModal();
+    });
+
+    modalBuyBtn.addEventListener('click', () => {
+      this.buyNow(product.id);
+      closeModal();
+    });
+  }
+
+  showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+
+    // 알림 스타일 추가
+    if (!document.getElementById('notification-styles')) {
+      const style = document.createElement('style');
+      style.id = 'notification-styles';
+      style.textContent = `
           .notification {
             position: fixed;
             top: 2rem;
@@ -861,30 +963,30 @@ export default class ProductGrid {
             to { transform: translateX(0); opacity: 1; }
           }
         `;
-        document.head.appendChild(style);
+      document.head.appendChild(style);
+    }
+
+    document.body.appendChild(notification);
+
+    // 3초 후 제거
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        notification.style.animation = 'slideInRight 0.3s ease reverse';
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
       }
-  
-      document.body.appendChild(notification);
-  
-      // 3초 후 제거
-      setTimeout(() => {
-        if (document.body.contains(notification)) {
-          notification.style.animation = 'slideInRight 0.3s ease reverse';
-          setTimeout(() => {
-            if (document.body.contains(notification)) {
-              document.body.removeChild(notification);
-            }
-          }, 300);
-        }
-      }, 3000);
-    }
-  
-    destroy() {
-      console.log('🧹 ProductGrid 정리 시작');
-      
-      // 모든 이벤트 리스너는 element가 DOM에서 제거될 때 자동으로 정리됨
-      this.element = null;
-      
-      console.log('✅ ProductGrid 정리 완료');
-    }
+    }, 3000);
   }
+
+  destroy() {
+    console.log('🧹 ProductGrid 정리 시작');
+
+    // 모든 이벤트 리스너는 element가 DOM에서 제거될 때 자동으로 정리됨
+    this.element = null;
+
+    console.log('✅ ProductGrid 정리 완료');
+  }
+}

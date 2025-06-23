@@ -130,11 +130,25 @@ class Router {
 router.addRoute('/login', async () => {
   console.log('🔄 LoginPage 로딩 시작...');
   try {
+
+    
     const { default: LoginPage } = await import('./pages/LoginPage.js');
     console.log('✅ LoginPage 모듈 로드 완료');
     return LoginPage;
   } catch (error) {
     console.error('❌ LoginPage 로드 실패:', error);
+    throw error;
+  }
+});
+
+router.addRoute('/myPage', async () => {
+  console.log('🔄 myPage 로딩 시작...');
+  try {
+    const { default: MyPage } = await import('./pages/myPage.js');
+    console.log('✅ myPage 모듈 로드 완료');
+    return MyPage;
+  } catch (error) {
+    console.error('❌ LomyPageginPage 로드 실패:', error);
     throw error;
   }
 });
