@@ -5,7 +5,7 @@ class StyleManager {
 
     loadStyle(styleId, cssContent) {
         if (this.loadedStyles.has(styleId)) {
-            return; // 이미 로드됨
+            return;
         }
 
         const style = document.createElement('style');

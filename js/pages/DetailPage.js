@@ -1,5 +1,8 @@
 import { apiManager } from '../api/ApiService.js';
 import Header from '../components/Header.js';
+import { detailPageTemplate } from '../../templates/detail.html.js'
+import { detailPageStyles } from '../../styles/detail.css.js';
+import { styleManager } from '../utils/CSSManager.js';
 
 
 export default class DetailPage {
@@ -8,6 +11,7 @@ export default class DetailPage {
     this.product = productData;
     this.element = null;
     this.apiManager = apiManager;
+    this.contentContainer = null;
 
     this.header = new Header();
   }
@@ -16,19 +20,13 @@ export default class DetailPage {
     this.element = document.createElement('div');
     this.element.className = 'detail-page';
 
-    console.log('🔧 Header 인스턴스:', this.header);
-
 
     const headerSection = this.header.render();
     this.element.appendChild(headerSection);
+
+
     console.log('🎨 Header 렌더링 결과:', headerSection);
     console.log('🎨 Header HTML:', headerSection.outerHTML);
-
-
-     // ✅ Content 영역 (동적으로 변경되는 부분)
-     this.contentContainer = document.createElement('div');
-     this.contentContainer.className = 'detail-content-wrapper';
-     this.element.appendChild(this.contentContainer);
 
 
     if (this.product) {
@@ -46,6 +44,10 @@ export default class DetailPage {
   }
 
 
+  loadStyles() {
+    styleManager.loadStyle(this.styleId, detailPageStyles);
+  }
+
   async loadProductData() {
     try {
       this.product = await this.apiManager.getProduct(this.productId);
@@ -59,7 +61,7 @@ export default class DetailPage {
 
   showLoading() {
     this.contentContainer.innerHTML = this.getLoadingHTML();
-}
+  }
 
   getLoadingHTML() {
     return `
@@ -76,36 +78,17 @@ export default class DetailPage {
   }
 
   updateDetailUI() {
-    this.contentContainer.innerHTML = `
-      <div class="detail-container">
-          <div class="detail-header">
-              <button class="btn-back" onclick="history.back()">← 뒤로가기</button>
-          </div>
-          
-          <div class="detail-content">
-              <div class="detail-image">
-                  <img src="${this.product.image}" alt="${this.product.name}">
-              </div>
-              
-              <div class="detail-info">
-                  <h1 class="product-title">${this.product.name}</h1>
-                  <div class="product-price">
-                      <span class="current-price">${this.product.price.toLocaleString()}원</span>
-                  </div>
-                  
-                  <div class="product-description">
-                      <h3>상품 설명</h3>
-                      <p>${this.product.info || '상품 설명이 없습니다.'}</p>
-                  </div>
-                  
-                  <div class="product-actions">
-                      <button class="btn-cart">🛒 장바구니 담기</button>
-                      <button class="btn-buy">💰 바로 구매</button>
-                  </div>
-              </div>
-          </div>
-      </div>
-  `;
+
+    if (!this.product) {
+      this.showError();
+      return;
+    }
+
+    this.contentContainer = document.createElement('div');
+    this.contentContainer.className = 'detail-content-wrapper';
+    this.element.appendChild(this.contentContainer);
+    this.contentContainer.innerHTML = detailPageTemplate(this.product);
+    this.loadStyles();
 
     this.bindEvents();
   }

@@ -19,21 +19,8 @@ export default class LoginPage {
             username: { isValid: false, message: '', value: '' },
             password: { isValid: false, message: '', value: '' }
         };
-
-
     }
 
-    // needRedirectionCheck() {
-    //     const status =this.tokenManager.getTokenStatus();
-        
-    //     if (status.needsRefresh) {
-    //         console.log('🔄 초기화 시 토큰 갱신 필요');
-    //         this.tokenManager.refreshAccessToken();
-    //     } else if (status.accessTokenValid) {
-    //         this.tokenManager.setupAutoRefresh();
-    //     }
-
-    // }
     async checkTokenAndRedirect() {
         console.log('🔍 로그인 페이지 - 토큰 상태 체크 및 자동 리다이렉트');
         
