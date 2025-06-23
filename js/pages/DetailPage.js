@@ -67,7 +67,7 @@ export default class DetailPage {
     return `
       <div class="detail-container">
           <div class="detail-header">
-              <button class="btn-back" onclick="history.back()">← 뒤로가기</button>
+             
           </div>
           <div class="detail-loading">
               <div class="loading-spinner"></div>
@@ -93,18 +93,106 @@ export default class DetailPage {
     this.bindEvents();
   }
 
-  bindEvents() {
-    const cartBtn = this.element.querySelector('.btn-cart');
-    const buyBtn = this.element.querySelector('.btn-buy');
 
-    cartBtn?.addEventListener('click', () => {
-      console.log('🛒 장바구니에 추가:', this.product.name);
-      alert(`${this.product.name}을 장바구니에 추가했습니다!`);
-    });
 
-    buyBtn?.addEventListener('click', () => {
-      console.log('💰 바로 구매:', this.product.name);
-      alert(`${this.product.name} 구매 페이지로 이동합니다!`);
-    });
+    // ✅ 수량 증가
+    increaseQuantity() {
+      const quantityInput = this.contentContainer.querySelector('.quantity-input');
+      const currentValue = parseInt(quantityInput.value) || 1;
+      
+      if (currentValue < 99) {
+          quantityInput.value = currentValue + 1;
+          this.updateTotalPrice();
+      }
   }
+
+  // ✅ 수량 감소
+  decreaseQuantity() {
+      const quantityInput = this.contentContainer.querySelector('.quantity-input');
+      const currentValue = parseInt(quantityInput.value) || 1;
+      
+      if (currentValue > 1) {
+          quantityInput.value = currentValue - 1;
+          this.updateTotalPrice();
+      }
+  }
+
+  // ✅ 현재 수량 가져오기
+  getQuantity() {
+      const quantityInput = this.contentContainer.querySelector('.quantity-input');
+      return parseInt(quantityInput.value) || 1;
+  }
+
+  // ✅ 총 금액 업데이트
+  updateTotalPrice() {
+      const quantityInput = this.contentContainer.querySelector('.quantity-input');
+      const totalPriceElement = this.contentContainer.querySelector('.total-price');
+      const totalQuantityElement = this.contentContainer.querySelector('.total-quantity');
+      
+      const quantity = parseInt(quantityInput.value) || 1;
+      const basePrice = this.product.price;
+      const totalPrice = basePrice * quantity;
+      
+      // ✅ UI 업데이트
+      totalPriceElement.textContent = totalPrice.toLocaleString() + '원';
+      totalQuantityElement.textContent = `총 수량 ${quantity}개`;
+      
+      console.log(`💰 총 금액 업데이트: ${quantity}개 × ${basePrice.toLocaleString()}원 = ${totalPrice.toLocaleString()}원`);
+  }
+
+  // ✅ 수량 입력 유효성 검사
+  validateQuantity() {
+      const quantityInput = this.contentContainer.querySelector('.quantity-input');
+      let value = parseInt(quantityInput.value);
+      
+      if (isNaN(value) || value < 1) {
+          quantityInput.value = 1;
+      } else if (value > 99) {
+          quantityInput.value = 99;
+      }
+      
+      this.updateTotalPrice();
+  }
+
+  bindEvents() {
+    console.log('🔗 이벤트 바인딩 시작');
+
+    // ✅ 이벤트 위임으로 처리
+    this.contentContainer.addEventListener('click', (e) => {
+        const action = e.target.dataset.action;
+        
+        if (action === 'decrease') {
+            console.log('➖ 감소 버튼 클릭');
+            this.decreaseQuantity();
+        } 
+        else if (action === 'increase') {
+            console.log('➕ 증가 버튼 클릭');
+            this.increaseQuantity();
+        }
+        else if (e.target.classList.contains('btn-cart')) {
+            console.log('🛒 장바구니 버튼 클릭');
+            const quantity = this.getQuantity();
+            alert(`${this.product.name}을 ${quantity}개 장바구니에 추가했습니다!`);
+        }
+        else if (e.target.classList.contains('btn-buy')) {
+            console.log('💰 구매 버튼 클릭');
+            const quantity = this.getQuantity();
+            alert(`${this.product.name} ${quantity}개 구매 페이지로 이동합니다!`);
+        }
+    });
+
+    // 입력 이벤트는 별도 처리
+    const quantityInput = this.contentContainer.querySelector('.quantity-input');
+    quantityInput?.addEventListener('change', () => {
+        console.log('🔢 수량 변경');
+        this.validateQuantity();
+    });
+
+    quantityInput?.addEventListener('input', () => {
+        console.log('⌨️ 수량 입력');
+        this.updateTotalPrice();
+    });
+
+    console.log('✅ 이벤트 바인딩 완료');
+}
 }

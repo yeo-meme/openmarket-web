@@ -26,9 +26,9 @@ export const productInfoTemplate = (product) => `
                 <div class="quantity-label">수량을 선택</div>
                 <div class="quantity-selector">
                     <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="decreaseQuantity()">-</button>
-                        <input type="number" class="quantity-input" value="1" min="1" max="99" id="quantity">
-                        <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+                        <button class="quantity-btn" data-action="decrease">-</button>
+                        <input type="number" class="quantity-input" value="1" min="1" max="99" id="quantity data-price="${product.price}">
+                        <button class="quantity-btn" data-action="increase">+</button>
                     </div>
                 </div>
             </div>
@@ -38,7 +38,7 @@ export const productInfoTemplate = (product) => `
                     <span class="total-label">총 상품 금액</span>
                     <div>
                         <span style="color: #00a844; font-size: 14px;">총 수량 1개</span>
-                        <span class="total-price" id="totalPrice">17,500원</span>
+                        <span class="total-price" id="totalPrice">${product.price.toLocaleString()}원</span>
                     </div>
                 </div>
             </div>
